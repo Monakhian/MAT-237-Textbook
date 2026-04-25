@@ -1,0 +1,27 @@
+#*.pdf
+*.acn
+*.acr
+*.alg
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.glg
+*.glo
+*.gls
+*.idx
+*.ind
+*.ist
+*.lof
+*.lot
+*.log
+*.nav
+*.out
+*.snm
+*.synctex.gz
+*.toc
+*.ilg
+
+# For Pulsar cleanup:
+# *.acn, *.acr, *.alg, *.aux, *.bbl, *.blg, *.fdb_latexmk, *.fls, *.glg, *.glo, *.gls, *.idx, *.ind, *.ist, *.lof, *.lot, *.log, *.nav, *.out, *.snm, *.synctex.gz, *.toc, *.ilg

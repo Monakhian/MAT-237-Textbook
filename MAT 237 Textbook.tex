@@ -19,7 +19,9 @@
 \usepackage[bottom]{footmisc}
 \usepackage{mathrsfs}
 \usepackage{tikz}
+\usepackage{pgfplots}
 \usetikzlibrary{positioning,shapes,fit,arrows}
+\pgfplotsset{compat=1.18}
 
 %
 % Hyperref Setup
@@ -2413,19 +2415,118 @@ Because of this, we can think of rational numbers as being equivalence classes.
 
 \chapter{Measuring Asymptotic Growth}
 \section{Big-Oh Notation}
-When discussing functions, it often makes sense to say that one function grows ``more quickly" than another.
-For example, if you take any quadratic function $f(x) = ax^{2} + bx + c$ and any linear function $g(x) = dx + e$, the quadratic function will eventually ``pass up" the linear function.
-In this case, we say that $f$ has higher \emph{asymptotic growth} than $g$, or that $f$ grows quicker than $g$ \emph{asymptotically}.
-The word ``asymptotic" is used to indicate that we are discussing the behavior of the functions as the input value grows towards infinity.
+\sourceattribution{This section adapts ideas and examples from cletus, ``What is a plain English explanation of `Big O' notation?,'' \emph{Stack Overflow}, Jan. 28, 2009, edited May 29, 2022, \url{https://stackoverflow.com/questions/487258/what-is-a-plain-english-explanation-of-big-o-notation}. Stack Overflow content is licensed under CC BY-SA 4.0.}
 
-Put into more formal terms, we would say that there exists an $x$ value after which the absolute value of $f$ will always exceed the absolute value of $g$.
-The use of the absolute value here is important since we generally only care about the rate of asymptotic growth, not whether that growth is in the positive direction or the negative direction.
-For example, the function $f(x) = -2x^{2}$ still grows faster asymptotically than $g(x) = 100x + 102$ because for any $x$ value greater than 51, we also have that $|f(x)| \geq |g(x)|$.
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    width=0.9\textwidth,
+    height=0.5\textwidth,
+    xmin=0, xmax=100,
+    ymin=0, ymax=1000,
+    xlabel={Elements},
+    ylabel={Operations},
+    title={Big-O Complexity},
+    grid=major,
+    legend style={draw=none, at={(1.02,0.5)}, anchor=west},
+    tick label style={font=\small},
+    label style={font=\small},
+    title style={font=\bfseries}
+]
+\addplot[blue, thick, domain=0:100, samples=2] {1};
+\addlegendentry{$O(1)$}
 
-In practice, it is more useful to say one function grows at a rate asymptotically \emph{greater than or equal to} another.
-In addition, our definition above would say that $f(x) = x^{2}$ grows more slowly than $g(x) = x^{2} + 1$ even though $g$ is the same function as $f$ just shifted vertically by 1 unit.
-To rectify both of these problems, we allow ourselves to multiply one of the functions by a positive constant.
-This method of comparing asymptotic growth is called \emph{Big-Oh}.
+\addplot[red, thick, domain=1:100, samples=200] {ln(x)/ln(2)};
+\addlegendentry{$O(\log n)$}
+
+\addplot[green!60!black, thick, domain=0:100, samples=2] {x};
+\addlegendentry{$O(n)$}
+
+\addplot[violet, thick, domain=1:100, samples=200] {x*ln(x)/ln(2)};
+\addlegendentry{$O(n\log n)$}
+
+\addplot[cyan!70!blue, thick, domain=0:31.62, samples=200] {x^2};
+\addlegendentry{$O(n^2)$}
+
+\addplot[orange, thick, domain=0:10, samples=200] {2^x};
+\addlegendentry{$O(2^n)$}
+
+\addplot[gray!70!blue, thick] coordinates {(1,1) (2,2) (3,6) (4,24) (5,120) (6,720) (7,1000)};
+\addlegendentry{$O(n!)$}
+\end{axis}
+\end{tikzpicture}
+\caption{Common Big-Oh growth rates. Graph recreated from the visual included in cletus, ``What is a plain English explanation of `Big O' notation?,'' \emph{Stack Overflow}, \url{https://stackoverflow.com/questions/487258/what-is-a-plain-english-explanation-of-big-o-notation}.}
+\label{fig:BigOhComplexity}
+\end{figure}
+
+One big goal in mathematics for computer science is learning how to compare different ways of doing a job.
+If two students each finish a task in ten minutes, that may sound like a tie.
+But if one student organized ten papers and the other organized ten thousand, those ten minutes do not mean the same thing.
+Big-Oh notation gives us a way to talk about how the amount of work grows as the input gets bigger.
+
+At its core, Big-Oh answers a simple question: if the problem gets much bigger, how much more work will it take?
+That is why Big-Oh is so useful in math and computer science.
+We usually do not care about the exact number of seconds on one laptop.
+We want to know whether doubling the size of the job roughly doubles the work, squares the work, or makes the work grow very fast.
+
+There are three main ideas here.
+First, Big-Oh is \emph{relative}: it compares one kind of growth to another, so the comparison only makes sense when we are measuring similar things.
+Second, Big-Oh is a \emph{representation}: we choose what counts as ``work'' and use that as our measuring stick.
+For one problem we might count arithmetic steps.
+For another we might count comparisons.
+For another we might count memory accesses.
+Third, Big-Oh is about \emph{complexity}: it tells us how the amount of work changes when the input size changes.
+
+An everyday example comes from ordinary arithmetic.
+Suppose you add two six-digit numbers such as $123456$ and $789012$.
+Written the usual way, the calculation looks like this:
+\[
+\begin{array}{r}
+    123456 \\
++\,789012 \\
+\hline
+    912468
+\end{array}
+\]
+You move column by column from right to left, adding $6 + 2$, then $5 + 1$, then $4 + 0$, and so on.
+So the amount of work is tied directly to the number of digits.
+If the numbers have $n$ digits, then addition takes work proportional to $n$.
+So addition has linear growth, which we write as $O(n)$.
+Subtraction behaves the same way.
+
+Multiplication is different.
+For example, if we multiply $123$ by $456$, we can write:
+\[
+\begin{array}{r}
+     \phantom{0}123 \\
+\times\,456 \\
+\hline
+     \phantom{0}738 \\
+    \phantom{0}615 \\
+    492 \\
+\hline
+    56088
+\end{array}
+\]
+Using the grade-school method, each digit in one number is multiplied by each digit in the other number.
+The $6$ in $456$ multiplies all three digits of $123$, then the $5$ does the same, then the $4$ does the same.
+If both numbers have $n$ digits, that leads to about $n^{2}$ digit-by-digit multiplications, plus some extra additions to combine the partial products.
+Those extra steps matter if you want an exact count, but they do not change the main growth pattern.
+So grade-school multiplication is $O(n^{2})$.
+
+This leads to an important idea: in Big-Oh, we focus on the part of the expression that matters most when the input becomes large.
+For example, if an algorithm takes $n^{2} + 2n$ steps, the $n^{2}$ term will matter more than the $2n$ term once $n$ gets large.
+When $n$ is very large, the extra $2n$ is only a small part of the total.
+That is why both $n^{2} + 2n$ and $3n^{2} + 100n + 7$ have Big-Oh $O(n^{2})$.
+
+This is also why adding a small extra amount does not change the big picture.
+The functions $x^{2}$ and $x^{2} + 1$ are not exactly the same, but the $+1$ matters less and less as $x$ grows.
+In the same way, changing a constant multiplier does not change the Big-Oh class.
+For large-scale growth, $100x^{2}$ and $x^{2}$ behave the same way.
+
+In this text, we use Big-Oh in its standard math meaning: an eventual upper bound up to a constant multiple.
+Informally, saying $f = O(g)$ means that once the input is large enough, the values of $f$ do not grow past a constant multiple of the values of $g$.
 
 \begin{defn}[Big-Oh] \label{defn:Big-Oh}
     Given two functions $f$ and $g$, we say that $f$ is \emph{big-oh} of $g$, written $f = O(g)$ or $f(x) = O(g(x))$, if there exist a real number $k$ and a positive real number $C$ so that, whenever $x \geq k$, we also get that
@@ -2435,27 +2536,35 @@ This method of comparing asymptotic growth is called \emph{Big-Oh}.
 Put formally into logic, this definition becomes
 \begin{equation} \exists\, k \in \mathbb{R}, \exists\, C \in \mathbb{R}^{+}, \forall\, x \in \mathbb{R}\ [\, (\, x \geq k\, ) \rightarrow (\, |f(x)| \leq C|g(x)|\, )\, ] \label{eq:Big-Oh} \end{equation}
 
-We can apply this definition to show that $x^{2} + 1 = O(x^{2})$.
-Fixing $C = 2$ and $k = 1$, we get that whenever $x > k$, we also have that $|x^{2} + 1| < C|x^{2}|$.
-Fixing $C = 1$ and $k = 1$, we also get that $x^{2} = O(x^{2} + 1)$.
-This is where the idea of big-oh being an upper bound, or greater-than-or-equal-to asymptotic growth comes from.
+For example, $x^{2} + 1 = O(x^{2})$.
+To show this, we need to find a constant $C$ and a starting point $k$ so that
+\[ |x^{2} + 1| \leq C|x^{2}| \]
+whenever $x \geq k$.
+If we choose $C = 2$ and $k = 1$, then for every $x \geq 1$ we get
+\[ |x^{2} + 1| \leq 2|x^{2}|. \]
+This means that after $x$ reaches 1, the function $x^{2} + 1$ never grows bigger than twice $x^{2}$.
+So $x^{2} + 1$ is $O(x^{2})$.
 
-It is interesting to not in the above example that the $+1$ actually did not affect the big-oh of $x^{2}$ at all.
-This is because as $x$ gets large, the $1$ contributes a smaller and smaller portion of the total output of the function.
-In this case we say that the $x^{2}$ term \emph{dominates} the growth of the polynomial.
-In fact, the term with the largest power in a polynomial will always eventually dominate.
-Because of this, we call the largest power the \emph{degree} of the polynomial, so a constant $c(x) = k$ would be degree 0, a linear function $l(x) = mx + b$ would be degree 1, a quadratic $q(x) = ax^{2} + bx + c$ degree 2, etc.
+The other direction is also true: $x^{2} = O(x^{2} + 1)$.
+That does not mean the two functions are equal.
+It means each one is eventually no bigger than a constant multiple of the other.
+This is why Big-Oh is about comparing growth, not about saying two functions are exactly the same.
 
+For polynomials, the term with the largest power is the one that matters most when $x$ gets large.
+For example, in $3x^{2} + 100x + 7$, the $x^{2}$ term will eventually matter more than the $x$ term and the constant term.
+That is why the degree of a polynomial tells you its Big-Oh class.
+A constant function is $O(1)$, a linear function is $O(x)$, a quadratic function is $O(x^{2})$, and so on.
 To see a proof that the leading term of a polynomial always dominates, see \hyperref[appendix:PolynomialBig-Oh]{Appendix~\ref*{appendix:PolynomialBig-Oh}}.
 
 
 
 \section{Computing the Big-Oh of Compound Functions}
-The direct proof of \hyperref[thm:LeadingTermDominates]{Theorem~\ref*{thm:LeadingTermDominates}} that the leading term of a polynomial always dominates is fairly complicated and involves the use of the \hyperref[lem:GeneralizedTriangleInequality]{Generalized Triangle Inequality}.
-In practice, we usually break a compound function into smaller functions, each with a known big-oh then use properties of big-oh to find the big-oh of the whole.
+The direct proof of \hyperref[thm:LeadingTermDominates]{Theorem~\ref*{thm:LeadingTermDominates}} is fairly complicated and uses the \hyperref[lem:GeneralizedTriangleInequality]{Generalized Triangle Inequality}.
+In practice, we usually break a compound function into smaller functions, find the big-oh of each one, and then combine those results.
 
 The table below lists several common functions used to measure against for big-oh.
-They are arranged in descending order of big-oh, where we say that $f$ has a ``smaller" big-oh than $g$ or $O(f) < O(g)$ if $f = O(g)$ but $g \neq O(f)$.
+They are arranged from larger big-oh to smaller big-oh.
+We say that $f$ has a ``smaller'' big-oh than $g$, or $O(f) < O(g)$, if $f = O(g)$ but $g \neq O(f)$.
 For example, $x^{2} = O(x^{3})$ by picking $C = 1$ and $k = 0$, but no choice of $C$ or $k$ will give you the reverse, so $x^{3} \neq O(x^{2})$.
 The second column of the table states how to compare different functions of the same form.
 
@@ -2480,7 +2589,7 @@ The second column of the table states how to compare different functions of the 
 \caption{Common functions arranged by decreasing big-oh value} \label{tab:BigOhFunctions}
 \end{table}
 
-With these building blocks in hand, we can use the following properties to compute the big-oh of any function made by combining the above functions:
+With these basic functions in hand, we can use the following rules to compute the big-oh of more complicated functions:
 
 \begin{enumerate}
     \item If $f = O(a)$ and $g = O(b)$, then $f + g = \texttt{max}(O(a), O(b))$
@@ -2490,25 +2599,80 @@ With these building blocks in hand, we can use the following properties to compu
     \item If $f = O(a)$ and $g = O(b)$, then $f \circ g = O(a \circ b)$
 \end{enumerate}
 
-Using these properties makes computing the big-oh of a polynomial a piece of cake!
-Property 1 us that the big-oh of a polynomial will always be the big-oh of the leading term, and Property 2 tells us that the constant in front each term (which would have big-oh of $O(1)$) does not affect the big-oh of that term.
+These properties make it much easier to find the big-oh of a polynomial.
+Property 1 tells us that the big-oh of a polynomial is the big-oh of its leading term, and Property 2 tells us that the constant in front of a term does not change that term's big-oh.
 
 In practice, these properties are how mathematicians actually compute the big-oh of compound functions.
-Once we know the big-oh of all the building block functions, we can compute the big-oh of the whole function easily.
+Once we know the big-oh of the smaller pieces, we can find the big-oh of the whole function.
 
 
 \section{Computational Complexity of Algorithms}
-In computer science, it is often import measure how fast an algorithm will run as a function of the size of its input data set.
-Since differences in hardware, programming language, compiler, etc. can all affect the actual amount of time an algorithm takes to run, we simplify this measurement by instead measuring the number of \emph{operations} required to complete the algorithm.
+In computer science, the same basic idea is used to compare algorithms.
+The exact running time of a program depends on the machine, the programming language, the compiler, the current load on the computer, and many other details.
+So instead of measuring raw seconds, we usually count the number of \emph{operations} an algorithm performs as the input grows.
 This measurement is called the \emph{computational complexity} or \emph{time complexity} of the algorithm.\footnote{
-    There is also a concept of the ``space complexity" of an algorithm: the amount of memory required to run the algorithm.
-    Generally speaking, the time complexity and space complexity can be exchanged i.e. you can make your algorithm run faster by storing more data rather than computing it and you can make it take up less space by computing data rather than storing it.
+    There is also a concept of the ``space complexity'' of an algorithm: the amount of memory required to run the algorithm.
+    Generally speaking, time and space can be traded against each other; an algorithm can sometimes be made faster by storing more information, or made smaller by recomputing information instead of storing it.
 }
 
-What exactly counts as an operation varies depending on exactly what you are doing, but generally ``operations" include the mathematical operations, the assignment operation (setting a variable equal to a value), the boolean operations, bit shifting, type casting, etc.
-These differences in what qualifies as an operation can result in very different formulas to compute the exact number of operations required, but generally speaking, they will all have the same big-oh value.
-In addition, as the size of the input data set increases, the leading term of the formula for the number of operations eventually dominates anyway.
-For both of these reasons, computer scientists measure computational complexity in terms of big-oh.
+What counts as an operation depends on the problem.
+Sometimes the most expensive step is arithmetic.
+Sometimes it is comparing two objects.
+Sometimes it is moving data in memory.
+This is one reason Big-Oh is not an exact stopwatch reading.
+Different reasonable ways of counting may give slightly different formulas, but they usually lead to the same Big-Oh class.
+
+When people talk about an algorithm's Big-Oh, they also often care about which case is being measured.
+The \emph{best case} is what happens when everything goes as well as possible.
+The \emph{worst case} is the most work the algorithm might need for an input of a given size.
+The \emph{expected case} is the amount of work we would usually expect.
+In many applications, the worst case matters most because it tells us what can happen when things go badly.
+
+One of the most familiar examples is searching through your phone contacts.
+Suppose your contacts are sorted alphabetically and you want to find ``John Smith.''
+You would not start at the top and read every name one by one.
+A better idea is to jump near the middle, decide whether ``Smith'' should come before or after the name you see, then ignore half of the remaining list and repeat.
+This is called \emph{binary search}.
+
+Binary search is powerful because each comparison cuts the remaining search space roughly in half.
+If the contact list has 3 names, you need at most 2 comparisons.
+If it has 7 names, you need at most 3.
+If it has 15 names, you need at most 4.
+For a list with about 1,000,000 names, it takes only about 20 comparisons.
+That growth pattern is logarithmic, written $O(\log n)$.
+
+Notice how dramatic this is.
+An input that is much larger does not require that much more work.
+It only requires a few more comparisons.
+That is why logarithmic-time algorithms are usually considered very efficient.
+
+Now imagine the reverse problem.
+Suppose you have a phone number and want to find the matching person in your contacts.
+Your contacts are usually sorted by name, not by phone number, so halving the search space no longer helps.
+You may need to start at the beginning and check one contact after another until you find a match.
+That means the work grows in step with the number of entries, so the search is $O(n)$.
+In the best case the answer is the first entry, which is $O(1)$, but in the typical and worst cases you should expect linear growth.
+
+At the other extreme are problems whose growth becomes enormous very quickly.
+One famous example is the \emph{traveling salesman problem}: given a list of towns and the distances between them, find the shortest route that visits every town.
+Even for a fairly small number of towns, the number of possible tours grows very fast.
+With 5 towns, the number of possibilities is on the order of $5! = 5 \cdot 4 \cdot 3 \cdot 2 \cdot 1$.
+With 6 towns it is on the order of $6!$, with 7 towns on the order of $7!$, and so on.
+This kind of growth is called factorial growth and is written $O(n!)$.
+It becomes unmanageable very quickly.
+
+These examples are why the standard growth families matter so much:
+constant time $O(1)$, logarithmic time $O(\log n)$, linear time $O(n)$, quadratic time $O(n^{2})$, exponential time, and factorial time $O(n!)$ do not merely differ by notation.
+They describe genuinely different experiences as the input grows.
+
+Algorithms whose running time is bounded by $O(n^{a})$ for some exponent $a$ are said to run in \emph{polynomial time}.
+Examples include $O(n)$ and $O(n^{2})$.
+Many problems that can be solved in polynomial time are considered practical, even when the input becomes fairly large.
+By contrast, problems with exponential or factorial growth often become impractical much sooner.
+This difference is one reason modern cryptography works at all: some tasks are easy to do, but undoing them is believed to be hard.
+
+With that intuition in hand, we can now compute Big-Oh for specific algorithms.
+For example, let $\texttt{sum}$ be the following algorithm that takes as input a list of length $n$ of integers and returns the sum of those integers.
 
 For example, let $\texttt{sum}$ be the following algorithm that takes as input a list of length $n$ of integers and returns the sum of those integers.
 

@@ -2165,10 +2165,8 @@ Original function && Inverse function
 If you compose a function with its inverse, you get what is called the \emph{identity function} on either the domain or the codomain (depending on the order of composition).
 The identity function always maps a set into itself by taking each element and mapping it to itself.
 So the identity function on $\mathbb{N}$ would map $0$ to $0$, map $1$ to $1$, map $2$ to $2$, etc.
-Given a bijection $f: A \to B$ and its inverse $f^{-1}: B \to A$, we would have $f^{-1} \circ f: A \to A$ defined by
-\[ (f^{-1} \circ f)(a) = a \]
-and $f \circ f^{-1}: B \to B$ defined by
-\[ (f \circ f^{-1})(b) = b. \]
+The identity function on a set $S$ is often written as $id_{S}$ or even just $id$ if the set being acted on is clear from context.
+Given a bijection $f: A \to B$ and its inverse $f^{-1}: B \to A$, we would have $f^{-1} \circ f = id_{A}$ and $f \circ f^{-1} = id_{B}$.
 
 If you are given two functions $f$ and $g$ and need to check if they are inverses, the fastest way to do so is to compute $f \circ g$ and $g \circ f$ (you must check both!) to see if you get the identity.
 If so, then the functions are inverses, otherwise they are not.

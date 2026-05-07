@@ -40,9 +40,14 @@
 %
 \pagestyle{fancy}
 \fancyhf{}
-\fancyhead[LE,RO]{\thepage}
-\fancyhead[LO]{\nouppercase{\rightmark}}
-\fancyhead[RE]{\nouppercase{\leftmark}}
+% Use below for oneside style
+\fancyhead[L]{\nouppercase{\rightmark}}
+\fancyhead[R]{\thepage}
+
+% Use below for twoside style
+% \fancyhead[LE,RO]{\thepage}
+% \fancyhead[LO]{\nouppercase{\rightmark}}
+% \fancyhead[RE]{\nouppercase{\leftmark}}
 
 %
 % Spacing
@@ -2413,434 +2418,124 @@ Because of this, we can think of rational numbers as being equivalence classes.
 
 
 
-\chapter{Measuring Asymptotic Growth}
-\section{Big-Oh Notation}
-\sourceattribution{This section adapts ideas and examples from cletus, ``What is a plain English explanation of `Big O' notation?,'' \emph{Stack Overflow}, Jan. 28, 2009, edited May 29, 2022, \url{https://stackoverflow.com/questions/487258/what-is-a-plain-english-explanation-of-big-o-notation}. Stack Overflow content is licensed under CC BY-SA 4.0.}
+\chapter{Graph Theory}
+\section[Digraphs]{Digraphs\\[0.5ex]
+\normalsize\normalfont\textit{
+    Compare with Chapter 10 from \emph{Mathematics for Computer Science}
+}} % FIXME: Insert the missing images from MCS
+\emph{Directed graphs}, called \emph{digraphs} for short, provide a handy way to represent how things are connected together and how to get from one thing to another by following those connections.
+They are usually pictured as a bunch of dots or circles with arrows between some of the dots, as in Figure 10.1.
+The dots are called \emph{nodes} or \emph{vertices} and the lines are called \emph{directed edges} or \emph{arrows}; the digraph in Figure 10.1 has 4 nodes and 6 directed edges.
 
-\begin{figure}[H]
-\centering
-\begin{tikzpicture}
-\begin{axis}[
-    width=0.9\textwidth,
-    height=0.5\textwidth,
-    xmin=0, xmax=100,
-    ymin=0, ymax=1000,
-    xlabel={Elements},
-    ylabel={Operations},
-    title={Big-Oh Complexity},
-    grid=major,
-    legend style={draw=none, at={(1.02,0.5)}, anchor=west},
-    tick label style={font=\small},
-    label style={font=\small},
-    title style={font=\bfseries}
-]
-\addplot[blue, thick, domain=0:100, samples=2] {1};
-\addlegendentry{$O(1)$}
+Digraphs appear everywhere in computer science.
+For example, the digraph in Figure 10.2 represents a communication net, a topic we'll explore in depth in Chapter 11.
+Figure 10.2 has three ``in" nodes (pictured as little squares) representing locations where packets may arrive at the net, the three ``out" nodes representing destination locations for packets, and the remaining six nodes (pictured with little circles) represent switches.
+The 16 edges indicate paths that packets can take through the router.
 
-\addplot[red, thick, domain=1:100, samples=200] {ln(x)/ln(2)};
-\addlegendentry{$O(\log n)$}
+Another place digraphs emerge in computer science is in the hyperlink structure of the World Wide Web.
+Letting the vertices $x_{1}$, \dots, $x_{n}$ correspond to web pages, and using arrows to indicate when one page has a hyperlink to another, results in a digraph like the one in Figure 10.3---although the graph of the real World Wide Web would have n be a number in the billions and probably even the trillions.
+At first glance, this graph wouldn't seem to be very interesting.
+But in 1995, two students at Stanford, Larry Page and Sergey Brin, ultimately became multibillionaires from the realization of how useful the structure of this graph could be in building a search engine.
+So pay attention to graph theory, and who knows what might happen!
 
-\addplot[green!60!black, thick, domain=0:100, samples=2] {x};
-\addlegendentry{$O(n)$}
-
-\addplot[violet, thick, domain=1:100, samples=200] {x*ln(x)/ln(2)};
-\addlegendentry{$O(n\log n)$}
-
-\addplot[cyan!70!blue, thick, domain=0:31.62, samples=200] {x^2};
-\addlegendentry{$O(n^2)$}
-
-\addplot[orange, thick, domain=0:10, samples=200] {2^x};
-\addlegendentry{$O(2^n)$}
-
-\addplot[gray!70!blue, thick] coordinates {(1,1) (2,2) (3,6) (4,24) (5,120) (6,720) (7,1000)};
-\addlegendentry{$O(n!)$}
-\end{axis}
-\end{tikzpicture}
-\caption{Common Big-Oh growth rates. Graph recreated from the visual included in cletus, ``What is a plain English explanation of `Big O' notation?,'' \emph{Stack Overflow}, \url{https://stackoverflow.com/questions/487258/what-is-a-plain-english-explanation-of-big-o-notation}.}
-\label{fig:BigOhComplexity}
-\end{figure}
-
-One big goal in mathematics for computer science is learning how to compare different ways of doing a job.
-If two students each finish a task in ten minutes, that may sound like a tie.
-But if one student organized ten papers and the other organized ten thousand, those ten minutes do not mean the same thing.
-Big-Oh notation gives us a way to talk about how the amount of work grows as the input gets bigger.
-
-At its core, Big-Oh answers a simple question: if the problem gets much bigger, how much more work will it take?
-That is why Big-Oh is so useful in math and computer science.
-We usually do not care about the exact number of seconds on one laptop.
-We want to know whether doubling the size of the job roughly doubles the work, squares the work, or makes the work grow very fast.
-
-There are three main ideas here.
-First, Big-Oh is \emph{relative}: it compares one kind of growth to another, so the comparison only makes sense when we are measuring similar things.
-Second, Big-Oh is a \emph{representation}: we choose what counts as ``work'' and use that as our measuring stick.
-For one problem we might count arithmetic steps.
-For another we might count comparisons.
-For another we might count memory accesses.
-Third, Big-Oh is about \emph{complexity}: it tells us how the amount of work changes when the input size changes.
-
-An everyday example comes from ordinary arithmetic.
-Suppose you add two six-digit numbers such as $123456$ and $789012$.
-Written the usual way, the calculation looks like this:
-\[
-\begin{array}{r}
-    123456 \\
-+\,789012 \\
-\hline
-    912468
-\end{array}
-\]
-You move column by column from right to left, adding $6 + 2$, then $5 + 1$, then $4 + 0$, and so on.
-So the amount of work is tied directly to the number of digits.
-If the numbers have $n$ digits, then addition takes work proportional to $n$.
-So addition has linear growth, which we write as $O(n)$.
-Subtraction behaves the same way.
-
-Multiplication is different.
-For example, if we multiply $123$ by $456$, we can write:
-\[
-\begin{array}{r}
-     \phantom{0}123 \\
-\times\,456 \\
-\hline
-     \phantom{0}738 \\
-    \phantom{0}615 \\
-    492 \\
-\hline
-    56088
-\end{array}
-\]
-Using the grade-school method, each digit in one number is multiplied by each digit in the other number.
-The $6$ in $456$ multiplies all three digits of $123$, then the $5$ does the same, then the $4$ does the same.
-If both numbers have $n$ digits, that leads to about $n^{2}$ digit-by-digit multiplications, plus some extra additions to combine the partial products.
-Those extra steps matter if you want an exact count, but they do not change the main growth pattern.
-So grade-school multiplication is $O(n^{2})$.
-
-This leads to an important idea: in Big-Oh, we focus on the part of the expression that matters most when the input becomes large.
-For example, if an algorithm takes $n^{2} + 2n$ steps, the $n^{2}$ term will matter more than the $2n$ term once $n$ gets large.
-When $n$ is very large, the extra $2n$ is only a small part of the total.
-That is why both $n^{2} + 2n$ and $3n^{2} + 100n + 7$ have Big-Oh $O(n^{2})$.
-
-This is also why adding a small extra amount does not change the big picture.
-The functions $x^{2}$ and $x^{2} + 1$ are not exactly the same, but the $+1$ matters less and less as $x$ grows.
-In the same way, changing a constant multiplier does not change the Big-Oh class.
-For large-scale growth, $100x^{2}$ and $x^{2}$ behave the same way.
-
-In this text, we use Big-Oh in its standard math meaning: an eventual upper bound up to a constant multiple.
-Informally, saying $f = O(g)$ means that once the input is large enough, the values of $f$ do not grow past a constant multiple of the values of $g$.
-
-\begin{defn}[Big-Oh] \label{defn:Big-Oh}
-    Given two functions $f$ and $g$, we say that $f$ is \emph{big-oh} of $g$, written $f = O(g)$ or $f(x) = O(g(x))$, if there exist a real number $k$ and a positive real number $C$ so that, whenever $x \geq k$, we also get that
-    \[ |f(x)| \leq C|g(x)|. \]
+\begin{defn} \label{defn:digraph}
+  A \emph{directed graph} $G$ consists of a nonempty set $V(G)$, called the \emph{vertices} or \emph{nodes} of $G$, and a set $E(G)$, called the \emph{edges} of $G$.
+  Each edge in $E(G)$ \emph{starts} at some vertex $u$ called the \emph{tail} of the edge, and ends at some vertex $v$ called the \emph{head} of the edge.
+  Such an edge can be represented by the ordered pair $(u, v)$.
 \end{defn}
 
-Put formally into logic, this definition becomes
-\begin{equation} \exists\, k \in \mathbb{R}, \exists\, C \in \mathbb{R}^{+}, \forall\, x \in \mathbb{R}\ [\, (\, x \geq k\, ) \rightarrow (\, |f(x)| \leq C|g(x)|\, )\, ] \label{eq:Big-Oh} \end{equation}
-
-For example, $x^{2} + 1 = O(x^{2})$.
-To show this, we need to find a constant $C$ and a starting point $k$ so that
-\[ |x^{2} + 1| \leq C|x^{2}| \]
-whenever $x \geq k$.
-If we choose $C = 2$ and $k = 1$, then for every $x \geq 1$ we get
-\[ |x^{2} + 1| \leq 2|x^{2}|. \]
-This means that after $x$ reaches 1, the function $x^{2} + 1$ never grows bigger than twice $x^{2}$.
-So $x^{2} + 1$ is $O(x^{2})$.
-
-The other direction is also true: $x^{2} = O(x^{2} + 1)$.
-That does not mean the two functions are equal.
-It means each one is eventually no bigger than a constant multiple of the other.
-This is why Big-Oh is about comparing growth, not about saying two functions are exactly the same.
-
-For polynomials, the term with the largest power is the one that matters most when $x$ gets large.
-For example, in $3x^{2} + 100x + 7$, the $x^{2}$ term will eventually matter more than the $x$ term and the constant term.
-That is why the degree of a polynomial tells you its Big-Oh class.
-A constant function is $O(1)$, a linear function is $O(x)$, a quadratic function is $O(x^{2})$, and so on.
-To see a proof that the leading term of a polynomial always dominates, see \hyperref[appendix:PolynomialBig-Oh]{Appendix~\ref*{appendix:PolynomialBig-Oh}}.
-
-
-
-\section{Computing the Big-Oh of Compound Functions}
-The direct proof of \hyperref[thm:LeadingTermDominates]{Theorem~\ref*{thm:LeadingTermDominates}} is fairly complicated and uses the \hyperref[lem:GeneralizedTriangleInequality]{Generalized Triangle Inequality}.
-In practice, we usually break a compound function into smaller functions, find the big-oh of each one, and then combine those results.
-
-The table below lists several common functions used to measure against for big-oh.
-They are arranged from larger big-oh to smaller big-oh.
-We say that $f$ has a ``smaller'' big-oh than $g$, or $O(f) < O(g)$, if $f = O(g)$ but $g \neq O(f)$.
-For example, $x^{2} = O(x^{3})$ by picking $C = 1$ and $k = 0$, but no choice of $C$ or $k$ will give you the reverse, so $x^{3} \neq O(x^{2})$.
-The second column of the table states how to compare different functions of the same form.
-
-\begin{table}[H]
-\centering
-\begin{tabular}{|c|l|}
-    \multicolumn{1}{c}{Basic Function} & \multicolumn{1}{c}{How to Compare Different Functions of this Form} \\
-    \hline
-    $x^{x}$ & Not applicable \\
-    \hline
-    $x!$ & Not applicable \\
-    \hline
-    $a^{x}$ for $a > 0$ & If $a < b$ then $O(a^{x}) < O(b^{x})$ \\
-    \hline
-    $x^{n}$ for $n > 0$ & If $m < n$ then $O(x^{m}) < O(x^{n})$ \\
-    \hline
-    $\log_{a}(x)$ for $a > 0$ & All logarithms have the same big-oh, written $O(\log(x))$ \\
-    \hline
-    $O(c)$ for $c \in \mathbb{R}$ & All constant polynomials are $O(1)$ \\
-    \hline
-\end{tabular}
-\caption{Common functions arranged by decreasing big-oh value} \label{tab:BigOhFunctions}
-\end{table}
-
-With these basic functions in hand, we can use the following rules to compute the big-oh of more complicated functions:
-
-\begin{enumerate}
-    \item If $f = O(a)$ and $g = O(b)$, then $f + g = \texttt{max}(O(a), O(b))$
-
-    \item If $f = O(a)$ and $g = O(b)$, then $fg = O(ab)$
-
-    \item If $f = O(a)$ and $g = O(b)$, then $f \circ g = O(a \circ b)$
-\end{enumerate}
-
-These properties make it much easier to find the big-oh of a polynomial.
-Property 1 tells us that the big-oh of a polynomial is the big-oh of its leading term, and Property 2 tells us that the constant in front of a term does not change that term's big-oh.
-
-In practice, these properties are how mathematicians actually compute the big-oh of compound functions.
-Once we know the big-oh of the smaller pieces, we can find the big-oh of the whole function.
-
-
-\section{Computational Complexity of Algorithms}
-In computer science, the same basic idea is used to compare algorithms.
-The exact running time of a program depends on the machine, the programming language, the compiler, the current load on the computer, and many other details.
-So instead of measuring raw seconds, we usually count the number of \emph{operations} an algorithm performs as the input grows.
-This measurement is called the \emph{computational complexity} or \emph{time complexity} of the algorithm.\footnote{
-    There is also a concept of the ``space complexity'' of an algorithm: the amount of memory required to run the algorithm.
-    Generally speaking, time and space can be traded against each other; an algorithm can sometimes be made faster by storing more information, or made smaller by recomputing information instead of storing it.
-}
-
-What counts as an operation depends on the problem.
-Sometimes the most expensive step is arithmetic.
-Sometimes it is comparing two objects.
-Sometimes it is moving data in memory.
-This is one reason Big-Oh is not an exact stopwatch reading.
-Different reasonable ways of counting may give slightly different formulas, but they usually lead to the same Big-Oh class.
-
-When people talk about an algorithm's Big-Oh, they also often care about which case is being measured.
-The \emph{best case} is what happens when everything goes as well as possible.
-The \emph{worst case} is the most work the algorithm might need for an input of a given size.
-The \emph{expected case} is the amount of work we would usually expect.
-In many applications, the worst case matters most because it tells us what can happen when things go badly.
-
-One of the most familiar examples is searching through your phone contacts.
-Suppose your contacts are sorted alphabetically and you want to find ``John Smith.''
-You would not start at the top and read every name one by one.
-A better idea is to jump near the middle, decide whether ``Smith'' should come before or after the name you see, then ignore half of the remaining list and repeat.
-This is called \emph{binary search}.
-
-Binary search is powerful because each comparison cuts the remaining search space roughly in half.
-If the contact list has 3 names, you need at most 2 comparisons.
-If it has 7 names, you need at most 3.
-If it has 15 names, you need at most 4.
-For a list with about 1,000,000 names, it takes only about 20 comparisons.
-That growth pattern is logarithmic, written $O(\log n)$.
-
-Notice how dramatic this is.
-An input that is much larger does not require that much more work.
-It only requires a few more comparisons.
-That is why logarithmic-time algorithms are usually considered very efficient.
-
-Now imagine the reverse problem.
-Suppose you have a phone number and want to find the matching person in your contacts.
-Your contacts are usually sorted by name, not by phone number, so halving the search space no longer helps.
-You may need to start at the beginning and check one contact after another until you find a match.
-That means the work grows in step with the number of entries, so the search is $O(n)$.
-In the best case the answer is the first entry, which is $O(1)$, but in the typical and worst cases you should expect linear growth.
-
-At the other extreme are problems whose growth becomes enormous very quickly.
-One famous example is the \emph{traveling salesman problem}: given a list of towns and the distances between them, find the shortest route that visits every town.
-Even for a fairly small number of towns, the number of possible tours grows very fast.
-With 5 towns, the number of possibilities is on the order of $5! = 5 \cdot 4 \cdot 3 \cdot 2 \cdot 1$.
-With 6 towns it is on the order of $6!$, with 7 towns on the order of $7!$, and so on.
-This kind of growth is called factorial growth and is written $O(n!)$.
-It becomes unmanageable very quickly.
-
-These examples are why the standard growth families matter so much:
-constant time $O(1)$, logarithmic time $O(\log n)$, linear time $O(n)$, quadratic time $O(n^{2})$, exponential time, and factorial time $O(n!)$ do not merely differ by notation.
-They describe genuinely different experiences as the input grows.
-
-Algorithms whose running time is bounded by $O(n^{a})$ for some exponent $a$ are said to run in \emph{polynomial time}.
-Examples include $O(n)$ and $O(n^{2})$.
-Many problems that can be solved in polynomial time are considered practical, even when the input becomes fairly large.
-By contrast, problems with exponential or factorial growth often become impractical much sooner.
-This difference is one reason modern cryptography works at all: some tasks are easy to do, but undoing them is believed to be hard.
-
-With that intuition in hand, we can now compute Big-Oh for specific algorithms.
-For example, let $\texttt{sum}$ be the following algorithm that takes as input a list of length $n$ of integers and returns the sum of those integers.
-
-For example, let $\texttt{sum}$ be the following algorithm that takes as input a list of length $n$ of integers and returns the sum of those integers.
-
-\
-
-\begin{tabular}{|p{\textwidth}|}
-\hline
-\ \\
-\textbf{\huge \texttt{sum}(\texttt{list}):} \\
-\begin{enumerate}[topsep=0pt]
-    \item Set the variable \texttt{result} to be equal to the first element of \texttt{list}
-
-    \item For each remaining element:
-    \begin{enumerate}
-        \item take the sum of the current element with \texttt{result}
-
-        \item update \texttt{result} to the new sum
-    \end{enumerate}
-
-    \item return \texttt{result}
-\end{enumerate} \\
-\ \\
-\hline
-\end{tabular}
-
-\
-
-This algorithm uses one operation for the first element of the list, two for each of the remaining $n - 1$ elements, and an additional operation to return the result.
-This gives us a total of $1 + 2(n - 1) + 1 = 1 + 2n - 2 + 1 = 2n$ operations.
-Since $2n = O(n)$, we would say that this algorithm requires $O(n)$ operations, or more simply, that the algorithm is $O(n)$.
-
-One could argue that accessing each element from the list is an operation, so the total number of operations should be $2 + 3(n - 1) + 1 = 3n$.
-However $2n$ and $3n$ are both $O(n)$, so our computational complexity would be the same in either case.
-
-
-\section{Computing the Big-Oh of Compound Algorithms}
-It is not uncommon to build an algorithm out of other algorithms.
-For example, the following one-line algorithm keeps the variable \texttt{num} bounded between 1 and 10:
-
-\
-
-\begin{tabular}{|p{\textwidth}|}
-\hline
-\begin{enumerate}[topsep=0pt]
-    \item Set \texttt{num} to be the value \texttt{min}(10, \texttt{max}(1, \texttt{num}))
-\end{enumerate} \\
-\ \\
-\hline
-\end{tabular}
-
-\
-
-How do we compute the big-oh of such an algorithm?
-The first and simplest rule is as follows:
-\begin{quote}
-    \textbf{Rule 1:} If algorithm $A$ is $O(a)$ and algorithm $B$ is $O(b)$, then running algorithm $A$ then algorithm $B$ is $O(\texttt{max}(a, b))$. \label{quote:Rule1}
-\end{quote}
-In the example above, we are running \texttt{max} first, then plugging the result into \texttt{min}, then finally assigning that result to the variable \texttt{num}.
-So for the example above, assuming the assignment operator is $O(1)$, the \texttt{min} algorithm is $O(\log(n))$, and the \texttt{max} algorithm is $O(n^{2})$ (in practice both \texttt{min} and \texttt{max} should be $O(1)$ for comparing two numbers, but we use other big-oh values here to illustrate the point), the whole algorithm would be the maximum of $O(1)$, $O(\log(n))$, and $O(n^{2})$.
-Comparing these functions using \hyperref[tab:BigOhFunctions]{Table~\ref*{tab:BigOhFunctions}} gives a total big-oh of $O(n^{2})$.
-
-Things get a bit more complicated when you start introducing \emph{loops}.
-In computer science, a loop is when a portion of code is repeated.
-The number of times the code is repeated varies based on the type of loop used, the conditions given to the loop, and the existence of lines of code that break out of the loop prematurely.
-There are three main types of loops that we will discuss here.
-Their names may vary based on programming language, but generally they are known as \emph{while loops}, \emph{for loops}, and \emph{recursive loops}.
-
-\begin{description}
-    \item[While Loop:] A \emph{while loop} is a loop that executes indefinitely until certain conditions given by the programmer are met.
-    There is no general rule for computing the big-oh of a while loop since the number of iterations depends heavily on exactly what the exit conditions are and how they interact with the code inside the loop.
-
-    \item[For Loop:] A \emph{for loop} is a loop that falls into one of two categories:
-    \begin{enumerate}[label=\alph*)]
-        \item A loop that has a \texttt{start}, \texttt{stop}, and \texttt{increment} value.
-        This kind of for loop has an index variable that is set to \texttt{start}, increases by \texttt{increment} for each iteration of running the block of code, then exits once the index variable meets or exceeds \texttt{stop}.
-        If this kind of for loop is set up as intended, it should run for exactly $\left| \frac{\texttt{start} - \texttt{stop}}{\texttt{increment}} \right|$ iterations, rounded up (or down depending on the programming language) if not an integer.
-        This value may change if the index variable is manipulated within the code contained in the loop.
-        This kind of for loop is more common with procedural programming languages such as C.
-
-        \item A loop that has an iterable of object and runs once for each object in the iterable.
-        This kind of loop will run for exactly the same number of iterations as the number of objects in the iterable.
-        This kind of for loop is more common with object-oriented programming languages such as Python.
-    \end{enumerate}
-
-    \item[Recursive Loop:] A \emph{recursive loop} works similarly to mathematical induction where the result of running a block of code depends on running that same block of code with different inputs.
-    Generally speaking, a recursive loop will have one or more base cases where the programmer manually tells the program what to return and one or more recursive cases where the program will call itself with different inputs.
-    As with while loops, the big-oh of a recursive loop can vary wildly depending on the way the loop is set up.
-
-\end{description}
-
-Without any additional information and assuming there are no lines of code which break out of the loop prematurely, for loops are the only kind of loop that are easy to predict the number of iterations that will run.
-That being said, the following rule works for any loop:
-\begin{quote}
-    \textbf{Rule 2:} If a loop runs for $n$ iterations, and each iteration is $O(a)$, then the whole loop is $O(na)$. \label{quote:Rule2}
-\end{quote}
-For example, consider the following algorithm that takes in a positive integer $n$ and returns its factorial, $n!$:
-
-\
-
-\begin{tabular}{|p{\textwidth}|}
-\hline
-\ \\
-\textbf{\huge \texttt{factorial}($n$):} \\
-\begin{enumerate}[topsep=0pt]
-    \item Set \texttt{result} to $1$
-
-    \item For \texttt{index} with $\texttt{start} = n$, $\texttt{stop} = 0$, $\texttt{increment} = -1$:
-    \begin{enumerate}
-        \item Multiply \texttt{result} with \texttt{index}
-
-        \item Set \texttt{result} to the new product
-    \end{enumerate}
-
-    \item Return \texttt{result}
-\end{enumerate} \\
-\ \\
-\hline
-\end{tabular}
-
-\
-
-\texttt{factorial} contains one assignment operation, one for loop, and one return operation.
-The for loop runs for $\left| \frac{n - 0}{-1} \right| = n$ iterations, and each iteration contains two operations (not counting updating the index variable and checking it against the stop condition which together are always $O(1)$ anyway).
-Hence, by \hyperref[quote:Rule2]{Rule 2}, the loop is $O(2n) = O(n)$.
-By \hyperref[quote:Rule1]{Rule 1}, the whole algorithm's big-oh is the maximum of $O(1)$, $O(n)$, and $O(1)$.
-Comparing these functions using \hyperref[tab:BigOhFunctions]{Table~\ref*{tab:BigOhFunctions}} gives a total big-oh of $O(n)$, where $n$ is the input number.
-
-It is important to note the importance of stating, ``where $n$ is the input number," at the end of stating the big-oh.
-Sometimes in computer science, the big-oh will depend on the \emph{value} of the input and sometimes it will depend on the \emph{number} of inputs.
-For example, consider the following algorithm that makes use of \texttt{factorial}:
-
-\
-
-\begin{tabular}{|p{\textwidth}|}
-\hline
-\ \\
-\textbf{\huge \texttt{many\_factorials}(\texttt{input\_list}):} \\
-\begin{enumerate}[topsep=0pt]
-    \item Set \texttt{result} to be an empty list
-
-    \item For each \texttt{element} of \texttt{input\_list}:
-    \begin{enumerate}
-        \item Compute \texttt{factorial}(\texttt{element})
-
-        \item Append the result to \texttt{result}
-    \end{enumerate}
-
-    \item Return \texttt{result}
-\end{enumerate} \\
-\ \\
-\hline
-\end{tabular}
-
-\
-
-\texttt{factorial} contains one assignment operation, one for loop, and one return operation.
-The for loop runs for $m$ iterations, where $m$ is the number of elements in \texttt{input\_list} and each iteration contains one use of \texttt{factorial} and one other operation.
-By \hyperref[quote:Rule1]{Rule 1}, each iteration of the loop has a big-oh equal to the maximum of:
-\begin{itemize}
-    \item $O(n)$ (from \texttt{factorial}) where $n$ is the \texttt{element} from \texttt{input\_list} being computed
-
-    \item $O(1)$ (from the append operation)
-\end{itemize}
-Comparing these functions using \hyperref[tab:BigOhFunctions]{Table~\ref*{tab:BigOhFunctions}} gives a total big-oh of $O(n)$, where $n$ is the input number.
-Hence, by \hyperref[quote:Rule2]{Rule 2}, the loop is $O(mn)$.
-It should be noted that $n$ changes with each iteration of the loop, but since big-oh is an upper-bound, we can just let $n$ represent the largest \texttt{element} in \texttt{input\_list}.
-By \hyperref[quote:Rule1]{Rule 1}, the whole algorithm's big-oh is the maximum of $O(1)$, $O(mn)$, and $O(1)$.
-This gives a total big-oh of $O(mn)$, where $m$ is the number of \texttt{elements} in \texttt{input\_list} and $n$ is the largest element in \texttt{input\_list}.
+For an edge $e$ with tail $u$ and head $v$, we define $\texttt{tail}(e) = u$ and $\texttt{head}(e) = v$.
+
+There is nothing new in \hyperref[defn:digraph]{Definition~\ref*{defn:digraph}} except for a lot of vocabulary.
+Formally, a digraph $G$ is the same as a binary relation on the set $V(G)$---that is, a digraph is just a binary relation whose domain and codomain are the same set $V(G)$.
+In fact, we've already referred to the arrows in a relation $G$ as the ``graph" of $G$.
+
+
+\subsection[Vertex Degrees]{Vertex Degrees\\[0.5ex]
+\normalsize\normalfont\textit{
+    Compare with Section 10.1 from \emph{Mathematics for Computer Science}
+}}
+The \emph{in-degree} of a vertex in a digraph is the number of arrows coming into it, and similarly its \emph{out-degree} is the number of arrows out of it.
+More precisely,
+\begin{defn}
+  If $G$ is a digraph and $v \in V(G)$, then
+  \[ \texttt{indeg}(v) = |\{ e \in E(G) : \texttt{head}(e) = v \}| \]
+  \[ \texttt{outdeg}(v) = |\{ e \in E(G) : \texttt{tail}(e) = v \}| \]
+\end{defn}
+
+An immediate consequence of this definition is
+
+\begin{lem}
+  \[ \sum_{v \in V(G)} \texttt{indeg}(v) = |E(G)| = \sum_{v \in V(G)} \texttt{outdeg}(v). \]
+\end{lem}
+\begin{proof}
+The sum of the in-degrees is the same as counting up all the heads of edges in $E(G)$.
+Since every edge has exactly one head, this comes out to be $|E(G)|$, the number of edges in $G$.
+Similarly, the sum of the out-degrees is the number of tails which would also be $|E(G)|$.
+\end{proof}
+
+
+\section[Undirected Graphs]{Undirected Graphs\\[0.5ex]
+\normalsize\normalfont\textit{
+    Compare with Chapter 12 from \emph{Mathematics for Computer Science}
+}}
+\emph{Undirected graphs} model relationships that are symmetric, meaning that the relationship is mutual.
+Examples of such mutual relationships are being married, speaking the same language, not speaking the same language, occurring during overlapping time intervals, or being connected by a conducting wire.
+They come up in all sorts of applications, including scheduling, constraint satisfaction, computer graphics, and communications.
+
+
+\subsection[Vertex Adjacency and Degrees]{Vertex Adjacency and Degrees\\[0.5ex]
+\normalsize\normalfont\textit{
+    Compare with Section 12.1 from \emph{Mathematics for Computer Science}
+}}
+Undirected graphs are defined in almost the same way as digraphs, except that edges are \emph{undirected}---they connect two vertices without pointing in either direction between the vertices.
+So instead of a directed edge which starts at vertex $v$ and ends at vertex $w$, a simple graph only has an undirected edge that connects $v$ and $w$.
+It is common to model undirected graphs as \emph{symmetric digraphs} where every edge $(v, w)$ implies the existence of the symmetric edge $(w, v)$, though we will take a different approach here.
+% FIXME: Embed an image of an undirected graph and its digraph counterpart
+
+\begin{defn}
+  An \emph{undirected graph} $G$ consists of a nonempty set, $V(G)$, called the \emph{vertices} or \emph{nodes} of $G$, and a set $E(G)$ called the \emph{edges} of $G$.
+  Each edge in $E(G)$ has two vertices $u, v \in V(G)$ called its \emph{endpoints}.
+  Such an edge can be represented by the two element set $\{ u, v \}$.
+\end{defn}
+
+% FIXME: Add the figure
+Figure 12.1 An example of a graph with 9 vertices and 8 edges.
+
+For example, let $H$ be the graph pictured in Figure 12.1.
+The vertices of $H$ correspond to the nine dots in Figure 12.1, that is,
+\[ V(H) = \{ a, b, c, d, e, f, g, h, i \}. \]
+The edges correspond to the eight lines, that is,
+\[ E(H) = \{ \{ a, b \}, \{ a, c \}, \{ b, d \}, \{ c, d \}, \{c, e \}, \{ e, f \}, \{ e, g \}, \{ h, i \} \}. \]
+Mathematically, that's all there is to the graph $H$.
+
+\begin{defn}
+  Two vertices in an undirected graph are said to be \emph{adjacent} if they are the endpoints of the same edge, and an edge is said to be \emph{incident} to each of its endpoints.
+  The number of edges incident to a vertex $v$ is called the \emph{degree} of the vertex and is denoted by $\texttt{deg}(v)$. Equivalently, the degree of a vertex is the number of vertices adjacent to it.
+\end{defn}
+
+For example, for the graph $H$ of Figure 12.1, vertex $a$ is adjacent to vertex $b$, and $b$ is adjacent to $d$.
+The edge $\{ a, c \}$ is incident to its endpoints $a$ and $c$.
+Vertex $h$ has degree 1, $d$ has degree 2, and $\texttt{deg}(e) = 3$.
+It is possible for a vertex to have degree 0, in which case it is not adjacent to any other vertices.
+An undirected graph $G$ does not need to have any edges at all.
+$|E(G)|$ could be zero, implying that the degree of every vertex would also be zero.
+
+A \emph{simple graph} is a special case of an undirected graph.
+In a simple graph there cannot be more than one edge between the same two vertices.
+Also self-loops---edges that begin and at the same vertex---are
+not allowed in simple graphs.
+
+There is a simple connection between the sum of the degrees and the number of edges in any graph:
+\begin{lem}[Handshaking Lemma] \label{lem:handshakingLemma}
+  The sum of the degrees of the vertices in a graph equals twice the number of edges, that is
+  \[ \sum_{v \in V(G)} \texttt{deg}(v) = 2|E(G)|. \]
+\end{lem}
+\begin{proof}
+  Every edge contributes two to the sum of the degrees, one for each of its endpoints.
+\end{proof}
+
+We refer to \hyperref[lem:handshakingLemma]{Lemma~\ref*{lem:handshakingLemma}} as the \emph{Handshaking Lemma}: if we total up the number of people each person at a party shakes hands with, the total will be twice the number of handshakes that occurred.
 
 
 
@@ -3392,7 +3087,434 @@ The overall theme is that remainder arithmetic is a lot like ordinary arithmetic
 
 
 
-\chapter{Graph Theory}
+\chapter{Measuring Asymptotic Growth}
+\section{Big-Oh Notation}
+\sourceattribution{This section adapts ideas and examples from cletus, ``What is a plain English explanation of `Big O' notation?,'' \emph{Stack Overflow}, Jan. 28, 2009, edited May 29, 2022, \url{https://stackoverflow.com/questions/487258/what-is-a-plain-english-explanation-of-big-o-notation}. Stack Overflow content is licensed under CC BY-SA 4.0.}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    width=0.9\textwidth,
+    height=0.5\textwidth,
+    xmin=0, xmax=100,
+    ymin=0, ymax=1000,
+    xlabel={Elements},
+    ylabel={Operations},
+    title={Big-Oh Complexity},
+    grid=major,
+    legend style={draw=none, at={(1.02,0.5)}, anchor=west},
+    tick label style={font=\small},
+    label style={font=\small},
+    title style={font=\bfseries}
+]
+\addplot[blue, thick, domain=0:100, samples=2] {1};
+\addlegendentry{$O(1)$}
+
+\addplot[red, thick, domain=1:100, samples=200] {ln(x)/ln(2)};
+\addlegendentry{$O(\log n)$}
+
+\addplot[green!60!black, thick, domain=0:100, samples=2] {x};
+\addlegendentry{$O(n)$}
+
+\addplot[violet, thick, domain=1:100, samples=200] {x*ln(x)/ln(2)};
+\addlegendentry{$O(n\log n)$}
+
+\addplot[cyan!70!blue, thick, domain=0:31.62, samples=200] {x^2};
+\addlegendentry{$O(n^2)$}
+
+\addplot[orange, thick, domain=0:10, samples=200] {2^x};
+\addlegendentry{$O(2^n)$}
+
+\addplot[gray!70!blue, thick] coordinates {(1,1) (2,2) (3,6) (4,24) (5,120) (6,720) (7,1000)};
+\addlegendentry{$O(n!)$}
+\end{axis}
+\end{tikzpicture}
+\caption{Common Big-Oh growth rates. Graph recreated from the visual included in cletus, ``What is a plain English explanation of `Big O' notation?,'' \emph{Stack Overflow}, \url{https://stackoverflow.com/questions/487258/what-is-a-plain-english-explanation-of-big-o-notation}.}
+\label{fig:BigOhComplexity}
+\end{figure}
+
+One big goal in mathematics for computer science is learning how to compare different ways of doing a job.
+If two students each finish a task in ten minutes, that may sound like a tie.
+But if one student organized ten papers and the other organized ten thousand, those ten minutes do not mean the same thing.
+Big-Oh notation gives us a way to talk about how the amount of work grows as the input gets bigger.
+
+At its core, Big-Oh answers a simple question: if the problem gets much bigger, how much more work will it take?
+That is why Big-Oh is so useful in math and computer science.
+We usually do not care about the exact number of seconds on one laptop.
+We want to know whether doubling the size of the job roughly doubles the work, squares the work, or makes the work grow very fast.
+
+There are three main ideas here.
+First, Big-Oh is \emph{relative}: it compares one kind of growth to another, so the comparison only makes sense when we are measuring similar things.
+Second, Big-Oh is a \emph{representation}: we choose what counts as ``work'' and use that as our measuring stick.
+For one problem we might count arithmetic steps.
+For another we might count comparisons.
+For another we might count memory accesses.
+Third, Big-Oh is about \emph{complexity}: it tells us how the amount of work changes when the input size changes.
+
+An everyday example comes from ordinary arithmetic.
+Suppose you add two six-digit numbers such as $123456$ and $789012$.
+Written the usual way, the calculation looks like this:
+\[
+\begin{array}{r}
+    123456 \\
++\,789012 \\
+\hline
+    912468
+\end{array}
+\]
+You move column by column from right to left, adding $6 + 2$, then $5 + 1$, then $4 + 0$, and so on.
+So the amount of work is tied directly to the number of digits.
+If the numbers have $n$ digits, then addition takes work proportional to $n$.
+So addition has linear growth, which we write as $O(n)$.
+Subtraction behaves the same way.
+
+Multiplication is different.
+For example, if we multiply $123$ by $456$, we can write:
+\[
+\begin{array}{r}
+     \phantom{0}123 \\
+\times\,456 \\
+\hline
+     \phantom{0}738 \\
+    \phantom{0}615 \\
+    492 \\
+\hline
+    56088
+\end{array}
+\]
+Using the grade-school method, each digit in one number is multiplied by each digit in the other number.
+The $6$ in $456$ multiplies all three digits of $123$, then the $5$ does the same, then the $4$ does the same.
+If both numbers have $n$ digits, that leads to about $n^{2}$ digit-by-digit multiplications, plus some extra additions to combine the partial products.
+Those extra steps matter if you want an exact count, but they do not change the main growth pattern.
+So grade-school multiplication is $O(n^{2})$.
+
+This leads to an important idea: in Big-Oh, we focus on the part of the expression that matters most when the input becomes large.
+For example, if an algorithm takes $n^{2} + 2n$ steps, the $n^{2}$ term will matter more than the $2n$ term once $n$ gets large.
+When $n$ is very large, the extra $2n$ is only a small part of the total.
+That is why both $n^{2} + 2n$ and $3n^{2} + 100n + 7$ have Big-Oh $O(n^{2})$.
+
+This is also why adding a small extra amount does not change the big picture.
+The functions $x^{2}$ and $x^{2} + 1$ are not exactly the same, but the $+1$ matters less and less as $x$ grows.
+In the same way, changing a constant multiplier does not change the Big-Oh class.
+For large-scale growth, $100x^{2}$ and $x^{2}$ behave the same way.
+
+In this text, we use Big-Oh in its standard math meaning: an eventual upper bound up to a constant multiple.
+Informally, saying $f = O(g)$ means that once the input is large enough, the values of $f$ do not grow past a constant multiple of the values of $g$.
+
+\begin{defn}[Big-Oh] \label{defn:Big-Oh}
+    Given two functions $f$ and $g$, we say that $f$ is \emph{big-oh} of $g$, written $f = O(g)$ or $f(x) = O(g(x))$, if there exist a real number $k$ and a positive real number $C$ so that, whenever $x \geq k$, we also get that
+    \[ |f(x)| \leq C|g(x)|. \]
+\end{defn}
+
+Put formally into logic, this definition becomes
+\begin{equation} \exists\, k \in \mathbb{R}, \exists\, C \in \mathbb{R}^{+}, \forall\, x \in \mathbb{R}\ [\, (\, x \geq k\, ) \rightarrow (\, |f(x)| \leq C|g(x)|\, )\, ] \label{eq:Big-Oh} \end{equation}
+
+For example, $x^{2} + 1 = O(x^{2})$.
+To show this, we need to find a constant $C$ and a starting point $k$ so that
+\[ |x^{2} + 1| \leq C|x^{2}| \]
+whenever $x \geq k$.
+If we choose $C = 2$ and $k = 1$, then for every $x \geq 1$ we get
+\[ |x^{2} + 1| \leq 2|x^{2}|. \]
+This means that after $x$ reaches 1, the function $x^{2} + 1$ never grows bigger than twice $x^{2}$.
+So $x^{2} + 1$ is $O(x^{2})$.
+
+The other direction is also true: $x^{2} = O(x^{2} + 1)$.
+That does not mean the two functions are equal.
+It means each one is eventually no bigger than a constant multiple of the other.
+This is why Big-Oh is about comparing growth, not about saying two functions are exactly the same.
+
+For polynomials, the term with the largest power is the one that matters most when $x$ gets large.
+For example, in $3x^{2} + 100x + 7$, the $x^{2}$ term will eventually matter more than the $x$ term and the constant term.
+That is why the degree of a polynomial tells you its Big-Oh class.
+A constant function is $O(1)$, a linear function is $O(x)$, a quadratic function is $O(x^{2})$, and so on.
+To see a proof that the leading term of a polynomial always dominates, see \hyperref[appendix:PolynomialBig-Oh]{Appendix~\ref*{appendix:PolynomialBig-Oh}}.
+
+
+
+\section{Computing the Big-Oh of Compound Functions}
+The direct proof of \hyperref[thm:LeadingTermDominates]{Theorem~\ref*{thm:LeadingTermDominates}} is fairly complicated and uses the \hyperref[lem:GeneralizedTriangleInequality]{Generalized Triangle Inequality}.
+In practice, we usually break a compound function into smaller functions, find the big-oh of each one, and then combine those results.
+
+The table below lists several common functions used to measure against for big-oh.
+They are arranged from larger big-oh to smaller big-oh.
+We say that $f$ has a ``smaller'' big-oh than $g$, or $O(f) < O(g)$, if $f = O(g)$ but $g \neq O(f)$.
+For example, $x^{2} = O(x^{3})$ by picking $C = 1$ and $k = 0$, but no choice of $C$ or $k$ will give you the reverse, so $x^{3} \neq O(x^{2})$.
+The second column of the table states how to compare different functions of the same form.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|l|}
+    \multicolumn{1}{c}{Basic Function} & \multicolumn{1}{c}{How to Compare Different Functions of this Form} \\
+    \hline
+    $x^{x}$ & Not applicable \\
+    \hline
+    $x!$ & Not applicable \\
+    \hline
+    $a^{x}$ for $a > 0$ & If $a < b$ then $O(a^{x}) < O(b^{x})$ \\
+    \hline
+    $x^{n}$ for $n > 0$ & If $m < n$ then $O(x^{m}) < O(x^{n})$ \\
+    \hline
+    $\log_{a}(x)$ for $a > 0$ & All logarithms have the same big-oh, written $O(\log(x))$ \\
+    \hline
+    $O(c)$ for $c \in \mathbb{R}$ & All constant polynomials are $O(1)$ \\
+    \hline
+\end{tabular}
+\caption{Common functions arranged by decreasing big-oh value} \label{tab:BigOhFunctions}
+\end{table}
+
+With these basic functions in hand, we can use the following rules to compute the big-oh of more complicated functions:
+
+\begin{enumerate}
+    \item If $f = O(a)$ and $g = O(b)$, then $f + g = \texttt{max}(O(a), O(b))$
+
+    \item If $f = O(a)$ and $g = O(b)$, then $fg = O(ab)$
+
+    \item If $f = O(a)$ and $g = O(b)$, then $f \circ g = O(a \circ b)$
+\end{enumerate}
+
+These properties make it much easier to find the big-oh of a polynomial.
+Property 1 tells us that the big-oh of a polynomial is the big-oh of its leading term, and Property 2 tells us that the constant in front of a term does not change that term's big-oh.
+
+In practice, these properties are how mathematicians actually compute the big-oh of compound functions.
+Once we know the big-oh of the smaller pieces, we can find the big-oh of the whole function.
+
+
+\section{Computational Complexity of Algorithms}
+In computer science, the same basic idea is used to compare algorithms.
+The exact running time of a program depends on the machine, the programming language, the compiler, the current load on the computer, and many other details.
+So instead of measuring raw seconds, we usually count the number of \emph{operations} an algorithm performs as the input grows.
+This measurement is called the \emph{computational complexity} or \emph{time complexity} of the algorithm.\footnote{
+    There is also a concept of the ``space complexity'' of an algorithm: the amount of memory required to run the algorithm.
+    Generally speaking, time and space can be traded against each other; an algorithm can sometimes be made faster by storing more information, or made smaller by recomputing information instead of storing it.
+}
+
+What counts as an operation depends on the problem.
+Sometimes the most expensive step is arithmetic.
+Sometimes it is comparing two objects.
+Sometimes it is moving data in memory.
+This is one reason Big-Oh is not an exact stopwatch reading.
+Different reasonable ways of counting may give slightly different formulas, but they usually lead to the same Big-Oh class.
+
+When people talk about an algorithm's Big-Oh, they also often care about which case is being measured.
+The \emph{best case} is what happens when everything goes as well as possible.
+The \emph{worst case} is the most work the algorithm might need for an input of a given size.
+The \emph{expected case} is the amount of work we would usually expect.
+In many applications, the worst case matters most because it tells us what can happen when things go badly.
+
+One of the most familiar examples is searching through your phone contacts.
+Suppose your contacts are sorted alphabetically and you want to find ``John Smith.''
+You would not start at the top and read every name one by one.
+A better idea is to jump near the middle, decide whether ``Smith'' should come before or after the name you see, then ignore half of the remaining list and repeat.
+This is called \emph{binary search}.
+
+Binary search is powerful because each comparison cuts the remaining search space roughly in half.
+If the contact list has 3 names, you need at most 2 comparisons.
+If it has 7 names, you need at most 3.
+If it has 15 names, you need at most 4.
+For a list with about 1,000,000 names, it takes only about 20 comparisons.
+That growth pattern is logarithmic, written $O(\log n)$.
+
+Notice how dramatic this is.
+An input that is much larger does not require that much more work.
+It only requires a few more comparisons.
+That is why logarithmic-time algorithms are usually considered very efficient.
+
+Now imagine the reverse problem.
+Suppose you have a phone number and want to find the matching person in your contacts.
+Your contacts are usually sorted by name, not by phone number, so halving the search space no longer helps.
+You may need to start at the beginning and check one contact after another until you find a match.
+That means the work grows in step with the number of entries, so the search is $O(n)$.
+In the best case the answer is the first entry, which is $O(1)$, but in the typical and worst cases you should expect linear growth.
+
+At the other extreme are problems whose growth becomes enormous very quickly.
+One famous example is the \emph{traveling salesman problem}: given a list of towns and the distances between them, find the shortest route that visits every town.
+Even for a fairly small number of towns, the number of possible tours grows very fast.
+With 5 towns, the number of possibilities is on the order of $5! = 5 \cdot 4 \cdot 3 \cdot 2 \cdot 1$.
+With 6 towns it is on the order of $6!$, with 7 towns on the order of $7!$, and so on.
+This kind of growth is called factorial growth and is written $O(n!)$.
+It becomes unmanageable very quickly.
+
+These examples are why the standard growth families matter so much:
+constant time $O(1)$, logarithmic time $O(\log n)$, linear time $O(n)$, quadratic time $O(n^{2})$, exponential time, and factorial time $O(n!)$ do not merely differ by notation.
+They describe genuinely different experiences as the input grows.
+
+Algorithms whose running time is bounded by $O(n^{a})$ for some exponent $a$ are said to run in \emph{polynomial time}.
+Examples include $O(n)$ and $O(n^{2})$.
+Many problems that can be solved in polynomial time are considered practical, even when the input becomes fairly large.
+By contrast, problems with exponential or factorial growth often become impractical much sooner.
+This difference is one reason modern cryptography works at all: some tasks are easy to do, but undoing them is believed to be hard.
+
+With that intuition in hand, we can now compute Big-Oh for specific algorithms.
+For example, let $\texttt{sum}$ be the following algorithm that takes as input a list of length $n$ of integers and returns the sum of those integers.
+
+For example, let $\texttt{sum}$ be the following algorithm that takes as input a list of length $n$ of integers and returns the sum of those integers.
+
+\
+
+\begin{tabular}{|p{\textwidth}|}
+\hline
+\ \\
+\textbf{\huge \texttt{sum}(\texttt{list}):} \\
+\begin{enumerate}[topsep=0pt]
+    \item Set the variable \texttt{result} to be equal to the first element of \texttt{list}
+
+    \item For each remaining element:
+    \begin{enumerate}
+        \item take the sum of the current element with \texttt{result}
+
+        \item update \texttt{result} to the new sum
+    \end{enumerate}
+
+    \item return \texttt{result}
+\end{enumerate} \\
+\ \\
+\hline
+\end{tabular}
+
+\
+
+This algorithm uses one operation for the first element of the list, two for each of the remaining $n - 1$ elements, and an additional operation to return the result.
+This gives us a total of $1 + 2(n - 1) + 1 = 1 + 2n - 2 + 1 = 2n$ operations.
+Since $2n = O(n)$, we would say that this algorithm requires $O(n)$ operations, or more simply, that the algorithm is $O(n)$.
+
+One could argue that accessing each element from the list is an operation, so the total number of operations should be $2 + 3(n - 1) + 1 = 3n$.
+However $2n$ and $3n$ are both $O(n)$, so our computational complexity would be the same in either case.
+
+
+\section{Computing the Big-Oh of Compound Algorithms}
+It is not uncommon to build an algorithm out of other algorithms.
+For example, the following one-line algorithm keeps the variable \texttt{num} bounded between 1 and 10:
+
+\
+
+\begin{tabular}{|p{\textwidth}|}
+\hline
+\begin{enumerate}[topsep=0pt]
+    \item Set \texttt{num} to be the value \texttt{min}(10, \texttt{max}(1, \texttt{num}))
+\end{enumerate} \\
+\ \\
+\hline
+\end{tabular}
+
+\
+
+How do we compute the big-oh of such an algorithm?
+The first and simplest rule is as follows:
+\begin{quote}
+    \textbf{Rule 1:} If algorithm $A$ is $O(a)$ and algorithm $B$ is $O(b)$, then running algorithm $A$ then algorithm $B$ is $O(\texttt{max}(a, b))$. \label{quote:Rule1}
+\end{quote}
+In the example above, we are running \texttt{max} first, then plugging the result into \texttt{min}, then finally assigning that result to the variable \texttt{num}.
+So for the example above, assuming the assignment operator is $O(1)$, the \texttt{min} algorithm is $O(\log(n))$, and the \texttt{max} algorithm is $O(n^{2})$ (in practice both \texttt{min} and \texttt{max} should be $O(1)$ for comparing two numbers, but we use other big-oh values here to illustrate the point), the whole algorithm would be the maximum of $O(1)$, $O(\log(n))$, and $O(n^{2})$.
+Comparing these functions using \hyperref[tab:BigOhFunctions]{Table~\ref*{tab:BigOhFunctions}} gives a total big-oh of $O(n^{2})$.
+
+Things get a bit more complicated when you start introducing \emph{loops}.
+In computer science, a loop is when a portion of code is repeated.
+The number of times the code is repeated varies based on the type of loop used, the conditions given to the loop, and the existence of lines of code that break out of the loop prematurely.
+There are three main types of loops that we will discuss here.
+Their names may vary based on programming language, but generally they are known as \emph{while loops}, \emph{for loops}, and \emph{recursive loops}.
+
+\begin{description}
+    \item[While Loop:] A \emph{while loop} is a loop that executes indefinitely until certain conditions given by the programmer are met.
+    There is no general rule for computing the big-oh of a while loop since the number of iterations depends heavily on exactly what the exit conditions are and how they interact with the code inside the loop.
+
+    \item[For Loop:] A \emph{for loop} is a loop that falls into one of two categories:
+    \begin{enumerate}[label=\alph*)]
+        \item A loop that has a \texttt{start}, \texttt{stop}, and \texttt{increment} value.
+        This kind of for loop has an index variable that is set to \texttt{start}, increases by \texttt{increment} for each iteration of running the block of code, then exits once the index variable meets or exceeds \texttt{stop}.
+        If this kind of for loop is set up as intended, it should run for exactly $\left| \frac{\texttt{start} - \texttt{stop}}{\texttt{increment}} \right|$ iterations, rounded up (or down depending on the programming language) if not an integer.
+        This value may change if the index variable is manipulated within the code contained in the loop.
+        This kind of for loop is more common with procedural programming languages such as C.
+
+        \item A loop that has an iterable of object and runs once for each object in the iterable.
+        This kind of loop will run for exactly the same number of iterations as the number of objects in the iterable.
+        This kind of for loop is more common with object-oriented programming languages such as Python.
+    \end{enumerate}
+
+    \item[Recursive Loop:] A \emph{recursive loop} works similarly to mathematical induction where the result of running a block of code depends on running that same block of code with different inputs.
+    Generally speaking, a recursive loop will have one or more base cases where the programmer manually tells the program what to return and one or more recursive cases where the program will call itself with different inputs.
+    As with while loops, the big-oh of a recursive loop can vary wildly depending on the way the loop is set up.
+
+\end{description}
+
+Without any additional information and assuming there are no lines of code which break out of the loop prematurely, for loops are the only kind of loop that are easy to predict the number of iterations that will run.
+That being said, the following rule works for any loop:
+\begin{quote}
+    \textbf{Rule 2:} If a loop runs for $n$ iterations, and each iteration is $O(a)$, then the whole loop is $O(na)$. \label{quote:Rule2}
+\end{quote}
+For example, consider the following algorithm that takes in a positive integer $n$ and returns its factorial, $n!$:
+
+\
+
+\begin{tabular}{|p{\textwidth}|}
+\hline
+\ \\
+\textbf{\huge \texttt{factorial}($n$):} \\
+\begin{enumerate}[topsep=0pt]
+    \item Set \texttt{result} to $1$
+
+    \item For \texttt{index} with $\texttt{start} = n$, $\texttt{stop} = 0$, $\texttt{increment} = -1$:
+    \begin{enumerate}
+        \item Multiply \texttt{result} with \texttt{index}
+
+        \item Set \texttt{result} to the new product
+    \end{enumerate}
+
+    \item Return \texttt{result}
+\end{enumerate} \\
+\ \\
+\hline
+\end{tabular}
+
+\
+
+\texttt{factorial} contains one assignment operation, one for loop, and one return operation.
+The for loop runs for $\left| \frac{n - 0}{-1} \right| = n$ iterations, and each iteration contains two operations (not counting updating the index variable and checking it against the stop condition which together are always $O(1)$ anyway).
+Hence, by \hyperref[quote:Rule2]{Rule 2}, the loop is $O(2n) = O(n)$.
+By \hyperref[quote:Rule1]{Rule 1}, the whole algorithm's big-oh is the maximum of $O(1)$, $O(n)$, and $O(1)$.
+Comparing these functions using \hyperref[tab:BigOhFunctions]{Table~\ref*{tab:BigOhFunctions}} gives a total big-oh of $O(n)$, where $n$ is the input number.
+
+It is important to note the importance of stating, ``where $n$ is the input number," at the end of stating the big-oh.
+Sometimes in computer science, the big-oh will depend on the \emph{value} of the input and sometimes it will depend on the \emph{number} of inputs.
+For example, consider the following algorithm that makes use of \texttt{factorial}:
+
+\
+
+\begin{tabular}{|p{\textwidth}|}
+\hline
+\ \\
+\textbf{\huge \texttt{many\_factorials}(\texttt{input\_list}):} \\
+\begin{enumerate}[topsep=0pt]
+    \item Set \texttt{result} to be an empty list
+
+    \item For each \texttt{element} of \texttt{input\_list}:
+    \begin{enumerate}
+        \item Compute \texttt{factorial}(\texttt{element})
+
+        \item Append the result to \texttt{result}
+    \end{enumerate}
+
+    \item Return \texttt{result}
+\end{enumerate} \\
+\ \\
+\hline
+\end{tabular}
+
+\
+
+\texttt{factorial} contains one assignment operation, one for loop, and one return operation.
+The for loop runs for $m$ iterations, where $m$ is the number of elements in \texttt{input\_list} and each iteration contains one use of \texttt{factorial} and one other operation.
+By \hyperref[quote:Rule1]{Rule 1}, each iteration of the loop has a big-oh equal to the maximum of:
+\begin{itemize}
+    \item $O(n)$ (from \texttt{factorial}) where $n$ is the \texttt{element} from \texttt{input\_list} being computed
+
+    \item $O(1)$ (from the append operation)
+\end{itemize}
+Comparing these functions using \hyperref[tab:BigOhFunctions]{Table~\ref*{tab:BigOhFunctions}} gives a total big-oh of $O(n)$, where $n$ is the input number.
+Hence, by \hyperref[quote:Rule2]{Rule 2}, the loop is $O(mn)$.
+It should be noted that $n$ changes with each iteration of the loop, but since big-oh is an upper-bound, we can just let $n$ represent the largest \texttt{element} in \texttt{input\_list}.
+By \hyperref[quote:Rule1]{Rule 1}, the whole algorithm's big-oh is the maximum of $O(1)$, $O(mn)$, and $O(1)$.
+This gives a total big-oh of $O(mn)$, where $m$ is the number of \texttt{elements} in \texttt{input\_list} and $n$ is the largest element in \texttt{input\_list}.
 
 
 

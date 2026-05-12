@@ -20,7 +20,7 @@
 \usepackage{mathrsfs}
 \usepackage{tikz}
 \usepackage{pgfplots}
-\usetikzlibrary{positioning,shapes,fit,arrows}
+\usetikzlibrary{positioning,shapes,fit,arrows,arrows.meta}
 \pgfplotsset{compat=1.18}
 
 %
@@ -2419,39 +2419,152 @@ Because of this, we can think of rational numbers as being equivalence classes.
 
 
 \chapter{Graph Theory}
-\section[Digraphs]{Digraphs\\[0.5ex]
+\section{Basic Kinds of Graphs}
+\subsection[Directed Graphs]{Directed Graphs\\[0.5ex]
 \normalsize\normalfont\textit{
     Compare with Chapter 10 from \emph{Mathematics for Computer Science}
 }} % FIXME: Insert the missing images from MCS
 \emph{Directed graphs}, called \emph{digraphs} for short, provide a handy way to represent how things are connected together and how to get from one thing to another by following those connections.
-They are usually pictured as a bunch of dots or circles with arrows between some of the dots, as in Figure 10.1.
-The dots are called \emph{nodes} or \emph{vertices} and the lines are called \emph{directed edges} or \emph{arrows}; the digraph in Figure 10.1 has 4 nodes and 6 directed edges.
+They are usually pictured as a bunch of dots or circles with arrows between some of the dots, as in \hyperref[fig:digraph6Edges]{Figure~\ref*{fig:digraph6Edges}}.
+The dots are called \emph{nodes} or \emph{vertices} and the lines are called \emph{directed edges} or \emph{arrows}; the digraph in \hyperref[fig:digraph6Edges]{Figure~\ref*{fig:digraph6Edges}} has 4 nodes and 6 directed edges.
+
+\begin{figure}[H]
+  \centering
+  \begin{tikzpicture}[
+    >={Stealth[length=3mm, width = 1.7mm]},
+    shorten >=2pt,
+    shorten <=2pt,
+    node distance=1.5cm and 1.5cm,
+    every node/.style={
+      draw,
+      circle,
+      fill=black,
+      inner sep=1pt
+    }]
+    \node[label=left:$a$] (a) {};
+    \node[above right=of a, label=above:$b$] (b) {};
+    \node[below right=of b, label=right:$c$] (c) {};
+    \node[below left=of c, label=below:$d$] (d) {};
+
+    \draw[->] (a) to (b);
+    \draw[->, bend left=20] (b) to (c);
+    \draw[->, bend left=20] (c) to (b);
+    \draw[->] (d) to (c);
+    \draw[->] (a) to (d);
+    \draw[->] (b) to (d);
+  \end{tikzpicture}
+  \caption{A 4-node directed graph with 6 edges.}
+  \label{fig:digraph6Edges}
+\end{figure}
 
 Digraphs appear everywhere in computer science.
-For example, the digraph in Figure 10.2 represents a communication net, a topic we'll explore in depth in Chapter 11.
-Figure 10.2 has three ``in" nodes (pictured as little squares) representing locations where packets may arrive at the net, the three ``out" nodes representing destination locations for packets, and the remaining six nodes (pictured with little circles) represent switches.
+For example, the digraph in \hyperref[fig:routingDigraph]{Figure~\ref*{fig:routingDigraph}} represents a communication net.
+\hyperref[fig:routingDigraph]{Figure~\ref*{fig:routingDigraph}} has three ``in" nodes (pictured as little squares) representing locations where packets may arrive at the net, the three ``out" nodes representing destination locations for packets, and the remaining six nodes (pictured with little circles) represent switches.
 The 16 edges indicate paths that packets can take through the router.
 
+\begin{figure}[H]
+  \centering
+  \begin{tikzpicture}[
+    >={Stealth[length=3mm, width = 1.7mm]},
+    shorten >=2pt,
+    shorten <=2pt,
+    node distance=1.5cm and 1.5cm,
+    every node/.style={
+      draw,
+      circle,
+      inner sep=3pt
+    }]
+    \node (a) {};
+    \node[above=of a, label=above:$\text{in}_{0}$, draw, rectangle] (in0) {};
+    \node[right=of a] (b) {};
+    \node[below=of b, label=below:$\text{out}_{0}$, draw, rectangle] (out0) {};
+    \node[right=of b] (c) {};
+    \node[above=of c, label=above:$\text{in}_{1}$, draw, rectangle] (in1) {};
+    \node[right=of c] (d) {};
+    \node[below=of d, label=below:$\text{out}_{1}$, draw, rectangle] (out1) {};
+    \node[right=of d] (e) {};
+    \node[above=of e, label=above:$\text{in}_{2}$, draw, rectangle] (in2) {};
+    \node[right=of e] (f) {};
+    \node[below=of f, label=below:$\text{out}_{2}$, draw, rectangle] (out2) {};
+
+    \draw[->] (in0) to (a);
+    \draw[->, bend right=20] (a) to (b);
+    \draw[->, bend right=20] (b) to (a);
+    \draw[->] (out0) to (b);
+    \draw[->, bend right=20] (b) to (c);
+    \draw[->, bend right=20] (c) to (b);
+    \draw[->] (in1) to (c);
+    \draw[->, bend right=20] (c) to (d);
+    \draw[->, bend right=20] (d) to (c);
+    \draw[->] (out1) to (d);
+    \draw[->, bend right=20] (d) to (e);
+    \draw[->, bend right=20] (e) to (d);
+    \draw[->] (in2) to (e);
+    \draw[->, bend right=20] (e) to (f);
+    \draw[->, bend right=20] (f) to (e);
+    \draw[->] (out2) to (f);
+  \end{tikzpicture}
+  \caption{A 6-switch packet routing digraph.}
+  \label{fig:routingDigraph}
+\end{figure}
+
 Another place digraphs emerge in computer science is in the hyperlink structure of the World Wide Web.
-Letting the vertices $x_{1}$, \dots, $x_{n}$ correspond to web pages, and using arrows to indicate when one page has a hyperlink to another, results in a digraph like the one in Figure 10.3---although the graph of the real World Wide Web would have n be a number in the billions and probably even the trillions.
+Letting the vertices $x_{1}$, \dots, $x_{n}$ correspond to web pages, and using arrows to indicate when one page has a hyperlink to another, results in a digraph like the one in \hyperref[fig:webPageLinks]{Figure~\ref*{fig:webPageLinks}}---although the graph of the real World Wide Web would have n be a number in the billions and probably even the trillions.
 At first glance, this graph wouldn't seem to be very interesting.
 But in 1995, two students at Stanford, Larry Page and Sergey Brin, ultimately became multibillionaires from the realization of how useful the structure of this graph could be in building a search engine.
 So pay attention to graph theory, and who knows what might happen!
+
+\begin{figure}[H]
+  \centering
+  \begin{tikzpicture}[
+    >={Stealth[length=3mm, width = 1.7mm]},
+    shorten >=2pt,
+    shorten <=2pt,
+    node distance=1.5cm and 1.5cm,
+    every node/.style={
+      draw,
+      circle,
+      fill=black,
+      inner sep=1pt
+    }]
+    \node[label=left:$x_{1}$] (x1) {};
+    \node[above right=of x1, label=above:$x_{3}$] (x3) {};
+    \node[below right=of x3, label=below right:$x_{2}$] (x2) {};
+    \node[below=of x2, label=below:$x_{6}$] (x6) {};
+    \node[right=of x6, label=right:$x_{5}$] (x5) {};
+    \node[above right=of x2, label=above:$x_{4}$] (x4) {};
+    \node[below right=of x4, label=right:$x_{7}$] (x7) {};
+
+    \draw[->, bend right=20] (x1) to (x3);
+    \draw[->, bend right=20] (x3) to (x1);
+    \draw[->] (x3) to (x2);
+    \draw[->] (x1) to (x2);
+    \draw[->] (x1) to (x6);
+    \draw[->] (x6) to (x2);
+    \draw[->] (x2) to (x4);
+    \draw[->] (x7) to (x4);
+    \draw[->] (x7) to (x2);
+    \draw[->] (x6) to (x5);
+  \end{tikzpicture}
+  \caption{Links among Web Pages.}
+  \label{fig:webPageLinks}
+\end{figure}
 
 \begin{defn} \label{defn:digraph}
   A \emph{directed graph} $G$ consists of a nonempty set $V(G)$, called the \emph{vertices} or \emph{nodes} of $G$, and a set $E(G)$, called the \emph{edges} of $G$.
   Each edge in $E(G)$ \emph{starts} at some vertex $u$ called the \emph{tail} of the edge, and ends at some vertex $v$ called the \emph{head} of the edge.
   Such an edge can be represented by the ordered pair $(u, v)$.
+  For an edge $e$ with tail $u$ and head $v$, we define $\texttt{tail}(e) = u$ and $\texttt{head}(e) = v$.
 \end{defn}
-
-For an edge $e$ with tail $u$ and head $v$, we define $\texttt{tail}(e) = u$ and $\texttt{head}(e) = v$.
 
 There is nothing new in \hyperref[defn:digraph]{Definition~\ref*{defn:digraph}} except for a lot of vocabulary.
 Formally, a digraph $G$ is the same as a binary relation on the set $V(G)$---that is, a digraph is just a binary relation whose domain and codomain are the same set $V(G)$.
 In fact, we've already referred to the arrows in a relation $G$ as the ``graph" of $G$.
+Because of this, we can talk about a graph being \emph{reflexive}, \emph{symmetric}, \emph{transitive}, etc.
+In fact, undirected graphs, which we will discuss later, are often treated as symmetric digraphs.
 
 
-\subsection[Vertex Degrees]{Vertex Degrees\\[0.5ex]
+\subsubsection[Vertex Degrees]{Vertex Degrees\\[0.5ex]
 \normalsize\normalfont\textit{
     Compare with Section 10.1 from \emph{Mathematics for Computer Science}
 }}
@@ -2475,7 +2588,7 @@ Similarly, the sum of the out-degrees is the number of tails which would also be
 \end{proof}
 
 
-\section[Undirected Graphs]{Undirected Graphs\\[0.5ex]
+\subsection[Undirected Graphs]{Undirected Graphs\\[0.5ex]
 \normalsize\normalfont\textit{
     Compare with Chapter 12 from \emph{Mathematics for Computer Science}
 }}
@@ -2484,7 +2597,7 @@ Examples of such mutual relationships are being married, speaking the same langu
 They come up in all sorts of applications, including scheduling, constraint satisfaction, computer graphics, and communications.
 
 
-\subsection[Vertex Adjacency and Degrees]{Vertex Adjacency and Degrees\\[0.5ex]
+\subsubsection[Vertex Adjacency and Degrees]{Vertex Adjacency and Degrees\\[0.5ex]
 \normalsize\normalfont\textit{
     Compare with Section 12.1 from \emph{Mathematics for Computer Science}
 }}
@@ -2499,11 +2612,41 @@ It is common to model undirected graphs as \emph{symmetric digraphs} where every
   Such an edge can be represented by the two element set $\{ u, v \}$.
 \end{defn}
 
-% FIXME: Add the figure
-Figure 12.1 An example of a graph with 9 vertices and 8 edges.
+\begin{figure}[H]
+  \centering
+  \begin{tikzpicture}[
+    node distance=1cm and 1.5cm,
+    every node/.style={
+      draw,
+      circle,
+      fill=black,
+      inner sep=1pt
+    }]
+    \node[label=left:$a$] (a) {};
+    \node[above right=of a, label=above:$b$] (b) {};
+    \node[below right=of b, label=right:$d$] (d) {};
+    \node[below right=of a, label=below:$c$] (c) {};
+    \node[right=of a, label=above left:$f$] (f) {};
+    \node[right=of c, label=below:$e$] (e) {};
+    \node[above right=of e, label=right:$g$] (g) {};
+    \node[above right=of g, label=right:$h$] (h) {};
+    \node[below right=of g, label=right:$i$] (i) {};
 
-For example, let $H$ be the graph pictured in Figure 12.1.
-The vertices of $H$ correspond to the nine dots in Figure 12.1, that is,
+    \draw (a)--(b);
+    \draw (a)--(c);
+    \draw (b)--(d);
+    \draw (c)--(d);
+    \draw (c)--(e);
+    \draw (f)--(e);
+    \draw (e)--(g);
+    \draw (h)--(i);
+  \end{tikzpicture}
+  \caption{An example of a graph with 9 vertices and 8 edges.}
+  \label{fig:9e8eGraph}
+\end{figure}
+
+For example, let $H$ be the graph pictured in \hyperref[fig:9e8eGraph]{Figure~\ref*{fig:9e8eGraph}}.
+The vertices of $H$ correspond to the nine dots in \hyperref[fig:9e8eGraph]{Figure~\ref*{fig:9e8eGraph}}, that is,
 \[ V(H) = \{ a, b, c, d, e, f, g, h, i \}. \]
 The edges correspond to the eight lines, that is,
 \[ E(H) = \{ \{ a, b \}, \{ a, c \}, \{ b, d \}, \{ c, d \}, \{c, e \}, \{ e, f \}, \{ e, g \}, \{ h, i \} \}. \]
@@ -2536,6 +2679,227 @@ There is a simple connection between the sum of the degrees and the number of ed
 \end{proof}
 
 We refer to \hyperref[lem:handshakingLemma]{Lemma~\ref*{lem:handshakingLemma}} as the \emph{Handshaking Lemma}: if we total up the number of people each person at a party shakes hands with, the total will be twice the number of handshakes that occurred.
+
+
+\section[Walks, Paths, and Cycles]{Walks, Paths, and Cycles\\[0.5ex]
+\normalsize\normalfont\textit{
+    Compare with Section 12.7 from \emph{Mathematics for Computer Science}
+}}
+\begin{defn}
+  A \emph{walk} in a simple graph $G$ is a sequence of edges such that every edge in the walk shares an endpoint with the next edge in the sequence.
+  If working in a digraph, we also require that the head of one edge is the same as the tail of the next edge so that the walk can be traced without traveling backwards along any edge.
+  The \emph{length} of a walk is the total number of occurrences of edges in it i.e. if an edge is repeated, we count it multiple times.
+\end{defn}
+Walks are often represented by the sequence of vertices visited along the path.
+This can lead to some ambiguity if there are multiple edges between a given pair of vertices, but in many contexts such as with Eulerian and Hamiltonian circuits discussed later in this chapter, the distinction between the edges is irrelevant.
+
+In contexts where the distinction between the edges is relevant, walks must be represented by labeling the edges and listing the specific edges in sequence.
+For the remainder of this section, we will assume that all walks are on undirected graphs and that walks on multigraphs do not need to distinguish between edges with the same endpoints.
+
+Consider the following example.
+Let $\mathbf{v}$ be the walk
+\[ \mathbf{v} = v_{0}v_{1}v_{2} \dots v_{k} \]
+where $\{ v_{i}, v_{i + 1} \} \in E(G)$ for each $i$ between $0$ and $k - 1$.
+The walk is said to \emph{start} at $v_{0}$, to \emph{end}
+at $v_{k}$, and the length, $|\mathbf{v}|$, of the walk is $k$.\footnote{
+  The first edge is $\{ v_{0}, v_{1} \}$, the second is $\{ v_{1}, v_{2} \}$, etc. so the final edge would be $\{ v_{k - 1}, v_{k} \}$, the $k$th edge.
+}
+The walk is a \emph{path} if all the $v_{i}$'s are different, that is, if $i \neq j$, then $v_{i} \neq v_{j}$.
+A walk that begins and ends at the same vertex is a \emph{closed walk}.
+A single vertex counts as a length zero closed walk as well as a length zero path.
+
+A \emph{cycle} is a closed walk whose vertices are distinct except for the beginning and end vertices.
+If the cycle contains $n$ edges, we would call it an $n$-cycle.
+In an undirected graph, we wouldn't count traveling an edge in one direction and the same edge back as a 2-cycle, but 2-cycles can exist in digraphs and undirected multigraphs.
+
+\begin{figure}[H]
+  \centering
+  \begin{tikzpicture}[
+    node distance=2.5cm and 1.5cm,
+    every node/.style={
+      draw,
+      circle,
+      fill=black,
+      inner sep=1pt
+    }]
+    \node[label=below:$a$] (a) {};
+    \node[above right=of a, label=above:$b$] (b) {};
+    \node[below right=of b, label=below:$c$] (c) {};
+    \node[above right=of c, label=above:$d$] (d) {};
+    \node[right=of d, label=above:$e$] (e) {};
+    \node[below left=of e, label=below:$f$] (f) {};
+    \node[right=of f, label=below:$g$] (g) {};
+    \node[below right=of e, label=below:$h$] (h) {};
+
+    \draw (a)--(b);
+    \draw (b)--(c);
+    \draw (c)--(d);
+    \draw (d)--(e);
+    \draw (e)--(f);
+    \draw (f)--(g);
+    \draw (b)--(h);
+    \draw (h)--(e);
+    \draw (c)--(e);
+  \end{tikzpicture}
+  \caption{A graph with 3 cycles: $bhecb$, $cdec$, and $bcdehb$.}
+  \label{fig:graphWith3Cycles}
+\end{figure}
+
+The length of a walk is the number of occurrences of \emph{edges} in the walk, which is one less than the number of occurrences of \emph{vertices}.
+For example, the graph in \hyperref[fig:graphWith3Cycles]{Figure~\ref*{fig:graphWith3Cycles}} has a length 6 path through the seven successive vertices $abcdefg$.
+This is the longest path in the graph.
+The graph in \hyperref[fig:graphWith3Cycles]{Figure~\ref*{fig:graphWith3Cycles}} also has three distinct cycles: $bhecb$, $cdec$, and $bcdehb$.
+
+
+\subsection{Special Paths and Circuits}
+\subsubsection[Euler Circuits]{Euler Circuits\\[0.5ex]
+\normalsize\normalfont\textit{
+    Compare with Section 12.9.1 from \emph{Mathematics for Computer Science}
+}}
+Can you walk every hallway in the Museum of Fine Arts exactly once?
+If we represent hallways with vertices and connections between hallways with edges, then this reduces to a question about graphs.
+For example, could you visit every hallway exactly once in a museum with floor plan represented by the graph in \hyperref[fig:museumGraph]{Figure~\ref*{fig:museumGraph}}?
+
+\begin{figure}[H]
+  \centering
+  \begin{tikzpicture}[
+    node distance=1cm and 1cm,
+    every node/.style={
+      draw,
+      circle,
+      fill=black,
+      inner sep=1pt
+    }]
+    \node (a) {};
+    \node[right=of a] (b) {};
+    \node[below=of a] (c) {};
+    \node[below=of b] (d) {};
+    \node[below=of d] (e) {};
+    \node[right=of d] (f) {};
+    \node[right=of f] (g) {};
+    \node[below=of g] (h) {};
+    \node[right=of b] (i) {};
+    \node[right=of i] (j) {};
+    \node[above=of i] (k) {};
+    \node[above=of j] (l) {};
+    \node[above=of l] (m) {};
+    \node[right=of j] (n) {};
+    \node[right=of g] (o) {};
+
+    \draw (a)--(b);
+    \draw (a)--(c);
+    \draw (b)--(d);
+    \draw (c)--(d);
+    \draw (d)--(e);
+    \draw (d)--(f);
+    \draw (f)--(g);
+    \draw (g)--(h);
+    \draw (e)--(h);
+    \draw (b)--(i);
+    \draw (i)--(j);
+    \draw (b)--(k);
+    \draw (i)--(k);
+    \draw (k)--(l);
+    \draw (j)--(l);
+    \draw (k)--(m);
+    \draw (l)--(m);
+    \draw (j)--(g);
+    \draw (j)--(n);
+    \draw (g)--(o);
+    \draw (n)--(o);
+  \end{tikzpicture}
+  \caption{Is there a walk that includes every edge exactly once?}
+  \label{fig:museumGraph}
+\end{figure}
+
+The entire field of graph theory began when the famous 17th century mathematician Leonhard Euler asked whether the seven bridges of K\"onigsberg could all be crossed exactly once---essentially the same question we asked about the Museum of Fine Arts.
+
+An \emph{Euler circuit} of a graph is a closed walk that includes every edge exactly once.
+Graphs with Euler circuits turn out to be easy to recognize:
+
+\begin{thm} \label{thm:EulerCircuit}
+  A connected graph has an Euler circuit if and only if every vertex has even degree.
+\end{thm}
+
+The way you would prove this theorem is to start at a vertex, and ``walk" to other vertices in the graph.
+It does not matter which vertex you pick at each step because the even degree of every node means you must be able to exit by some edge after entering.
+In this way, you slowly ``use up" each edge until the only path left is back to the starting node, the only node that has been exited more times than it has been entered and therefore must also be the ending node.
+
+There is a similar theorem regarding Euler paths.
+An \emph{Euler path} is a walk that includes every edge exactly once.
+Unlike paths, an Euler path is not limited to visiting each vertex exactly once, so the name can be confusing.
+Graphs with Euler paths are equally easy to recognize:
+
+\begin{thm} \label{thm:EulerPath}
+  A connected graph has an Euler path if and only if all but two vertices have even degree.
+\end{thm}
+
+The proof is nearly identical to the proof of \hyperref[thm:EulerCircuit]{Theorem~\ref*{thm:EulerCircuit}} except you start at one of the two odd degree nodes and end at the other one.
+
+The graph shown in \hyperref[fig:museumGraph]{Figure~\ref*{fig:museumGraph}} has exactly two vertices with odd degree, so it has an Euler path, but not an Euler circuit.
+
+\subsubsection[Hamiltonian Circuits]{Hamiltonian Circuits\\[0.5ex]
+\normalsize\normalfont\textit{
+    Compare with Section 12.9.2 from \emph{Mathematics for Computer Science}
+}}
+Hamiltonian circuits are the unruly cousins of Euler circuits.
+
+\begin{defn}
+  A Hamiltonian circuit in a graph $G$ is a cycle that visits every vertex in G exactly once.
+  Similarly, a Hamiltonian path is a path in $G$ that visits every vertex exactly once.
+\end{defn}
+
+Although Hamiltonian circuits sound similar to Euler circuits---one visits every node once while the other visits every edge once---finding a Hamiltonian circuit or a Hamiltonian path can be a lot harder than finding an Euler circuit or path.
+No one has yet discovered a simple characterization for when a graph has a Hamiltonian circuit.
+In fact, finding an efficient way to determine whether a graph has a Hamiltonian circuit---or for proving that there is no procedure that works efficiently on all graphs---is one of the famous Millennium Problems for which you get a million dollars from the Clay Institute for solving.
+
+\subsubsection[The Traveling Salesperson Problem]{The Traveling Salesperson Problem\\[0.5ex]
+\normalsize\normalfont\textit{
+    Compare with Section 12.9.3 from \emph{Mathematics for Computer Science}
+}}
+In many applications, there are numerical costs or weights associated with the edges of the graph.
+For example, suppose the nodes of a graph represent buildings and edges represent connections between them.
+The cost of a connection may vary a lot from one pair of buildings or towns to another.
+Another example is where the nodes represent cities, and the weight of an edge is the distance between them: the weight of the Los Angeles/New York City edge is much higher than the weight of the NYC/Boston edge.
+
+As if the problem of finding a Hamiltonian circuit is not hard enough, in a weighted graph, we sometimes need to find a Hamiltonian circuit with minimum possible sum of the weights of its edges.
+This is the famous Traveling Salesperson Problem.
+For example, suppose you would like to visit every node in the graph shown in \hyperref[fig:travelingSalesperson]{Figure~\ref*{fig:travelingSalesperson}} exactly once, finishing at the node where you started.
+Can you find a weight 15 cycle that does this?
+
+\begin{figure}[H]
+  \centering
+  \begin{tikzpicture}[
+    node distance=1.5cm and 1.5cm,
+    every node/.style={
+      draw,
+      circle,
+      fill=black,
+      inner sep=1pt
+    }]
+    \node (a) {};
+    \node[above right=of a] (b) {};
+    \node[below right=of a] (c) {};
+    \node[right=3cm of b] (d) {};
+    \node[below right=of d] (f) {};
+    \node[below left=of f] (e) {};
+
+    \begin{scope}[every node/.style={}]]
+      \draw (a) to[bend left=90, looseness=1.75] node[above] {3} (f);
+      \draw (a) to node[above left] {3} (b);
+      \draw (a) to node[below left] {5} (c);
+      \draw (b) to node[left] {2} (c);
+      \draw (b) to node[above] {4} (d);
+      \draw (c) to node[above left] {3} (d);
+      \draw (c) to node[below] {6} (e);
+      \draw (d) to node[right] {4} (e);
+      \draw (d) to node[above right] {1} (f);
+      \draw (e) to node[below right] {2} (f);
+    \end{scope}
+  \end{tikzpicture}
+  \caption{Is there a Hamiltonian cycle with weight 15?}
+  \label{fig:travelingSalesperson}
+\end{figure}
 
 
 
